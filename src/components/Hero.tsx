@@ -30,7 +30,7 @@ export default function Hero({ onDesignEstate, onViewSample }: HeroProps) {
       <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#C9A84C]/20 to-transparent hidden lg:block" />
       <div className="absolute right-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#C9A84C]/20 to-transparent hidden lg:block" />
 
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-10 pt-32 pb-20 flex flex-col items-start">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pt-32 pb-20 flex flex-col items-start">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

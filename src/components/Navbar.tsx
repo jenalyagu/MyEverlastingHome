@@ -29,10 +29,7 @@ export default function Navbar({ onDesignEstate, onViewSample }: NavbarProps) {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16 lg:h-20">
           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-[#1A1614] rounded-sm flex items-center justify-center">
-              <span className="text-[#C9A84C] text-xs font-serif font-bold leading-none">M</span>
-            </div>
-            <span className={`font-serif text-lg tracking-wide transition-colors duration-500 ${scrolled ? 'text-[#1A1614]' : 'text-[#F7F3EE]'}`}>My Everlasting Home</span>
+            <img src="/Logos/ehbg-logo.png" alt="My Everlasting Home" className="h-9 w-auto" />
           </button>
 
           <div className={`hidden md:flex items-center gap-8 text-sm font-medium tracking-wide transition-colors duration-500 ${scrolled ? 'text-[#5C4033]' : 'text-[#C4BDB5]'}`}>
