@@ -444,6 +444,54 @@ app.post('/api/concept-board', async (req, res) => {
   }
 })
 
+// ---------------------------------------------------------------------------
+// DALL-E 3 image generation endpoint
+// ---------------------------------------------------------------------------
+
+app.post('/api/generate-image', async (req, res) => {
+  const openaiKey = process.env.OPENAI_API_KEY
+  if (!openaiKey) {
+    res.status(500).json({ error: 'OPENAI_API_KEY is not set. Add it to your .env file.' })
+    return
+  }
+
+  try {
+    const prompt = buildDreamHomePrompt(req.body)
+    console.log('\n--- DALL-E 3 PROMPT ---\n' + prompt + '\n---\n')
+
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${openaiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt,
+        n: 1,
+        size: '1792x1024',
+        quality: 'hd',
+        style: 'natural',
+      }),
+    })
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}))
+      throw new Error((err as { error?: { message?: string } }).error?.message || `OpenAI error ${response.status}`)
+    }
+
+    const result = await response.json() as { data: Array<{ url: string }> }
+    const url = result.data?.[0]?.url
+    if (!url) throw new Error('No image returned from DALL-E 3')
+
+    res.json({ url })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('Image generation error:', message)
+    res.status(500).json({ error: message })
+  }
+})
+
 if (IS_PROD) {
   app.get('*', (_req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'))

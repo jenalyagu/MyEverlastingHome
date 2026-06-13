@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, CheckSquare, Layers, Leaf, Droplets, Building2, Heart, Sparkles, Loader2 } from 'lucide-react'
+import { ArrowLeft, CheckSquare, Layers, Leaf, Droplets, Building2, Heart, Sparkles, Loader2, ImageIcon } from 'lucide-react'
 import { type Blueprint } from '../lib/blueprintGenerator'
 import { type EstateFormData } from '../lib/blueprintGenerator'
 
@@ -41,6 +41,29 @@ function ConceptBoardPanel({ formData }: { formData: EstateFormData }) {
   const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [board, setBoard] = useState<ConceptBoard | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
+  const [renderState, setRenderState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [aiRender, setAiRender] = useState<string | null>(null)
+
+  async function generateRender() {
+    setRenderState('loading')
+    try {
+      const res = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Request failed' }))
+        throw new Error(err.error || 'Generation failed')
+      }
+      const data = await res.json() as { url: string }
+      setAiRender(data.url)
+      setRenderState('done')
+    } catch (err) {
+      console.error(err)
+      setRenderState('error')
+    }
+  }
 
   async function generate() {
     setState('loading')
@@ -149,12 +172,52 @@ function ConceptBoardPanel({ formData }: { formData: EstateFormData }) {
             >
               {/* Hero image */}
               <div className="relative h-80 md:h-[420px] overflow-hidden bg-[#2C2420]">
-                {board.heroPhoto ? (
+                {aiRender ? (
+                  <img src={aiRender} alt="AI-generated estate render" className="w-full h-full object-cover" />
+                ) : board.heroPhoto ? (
                   <img src={board.heroPhoto} alt="Estate exterior" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-[#2C2420] to-[#1A1614]" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+                {/* AI Render button — top right */}
+                <div className="absolute top-4 right-4">
+                  {renderState === 'idle' && (
+                    <button
+                      onClick={generateRender}
+                      className="flex items-center gap-2 bg-black/50 hover:bg-black/70 backdrop-blur-sm border border-white/20 text-white text-xs font-medium px-4 py-2 rounded-sm transition-all duration-200"
+                    >
+                      <ImageIcon size={12} />
+                      Generate AI Render
+                    </button>
+                  )}
+                  {renderState === 'loading' && (
+                    <div className="flex items-center gap-2 bg-black/50 backdrop-blur-sm border border-white/20 text-white/70 text-xs px-4 py-2 rounded-sm">
+                      <Loader2 size={12} className="animate-spin" />
+                      Rendering with DALL-E 3…
+                    </div>
+                  )}
+                  {renderState === 'done' && (
+                    <button
+                      onClick={generateRender}
+                      className="flex items-center gap-2 bg-black/50 hover:bg-black/70 backdrop-blur-sm border border-[#C9A84C]/40 text-[#C9A84C] text-xs font-medium px-4 py-2 rounded-sm transition-all duration-200"
+                    >
+                      <ImageIcon size={12} />
+                      Regenerate Render
+                    </button>
+                  )}
+                  {renderState === 'error' && (
+                    <button
+                      onClick={generateRender}
+                      className="flex items-center gap-2 bg-red-900/50 hover:bg-red-900/70 backdrop-blur-sm border border-red-400/30 text-red-300 text-xs px-4 py-2 rounded-sm transition-all"
+                    >
+                      <ImageIcon size={12} />
+                      Retry Render
+                    </button>
+                  )}
+                </div>
+
                 {/* Mood words over hero */}
                 <div className="absolute bottom-0 left-0 right-0 p-8">
                   <div className="flex flex-wrap gap-2 mb-4">
