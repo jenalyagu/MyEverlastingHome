@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import type { ImageProvider, GenerateImageRequest, GenerateImageResult } from './imageProviderTypes'
 import { IMAGE_MODELS } from '../imageProviderConfig'
 

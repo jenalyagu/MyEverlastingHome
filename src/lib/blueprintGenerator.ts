@@ -41,6 +41,8 @@ export interface EstateFormData {
   budgetRange: string
   buildTimeline: string
   scipInterest: string
+
+  acreage?: string
 }
 
 export interface Blueprint {
