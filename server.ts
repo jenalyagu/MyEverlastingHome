@@ -5,6 +5,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import Anthropic from '@anthropic-ai/sdk'
 import Stripe from 'stripe'
+import { Resend } from 'resend'
 import { createOpenAIImageProvider } from './src/lib/imageProviders/openaiImageProvider.js'
 import { createGeminiImageProvider } from './src/lib/imageProviders/geminiImageProvider.js'
 import { createDalleImageProvider } from './src/lib/imageProviders/dalleImageProvider.js'
@@ -792,6 +793,180 @@ app.post('/api/generate-brief', async (req, res) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('Brief generation error:', message)
+    res.status(500).json({ error: message })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// Share with EHBG — sends a formatted lead email to the team
+// ---------------------------------------------------------------------------
+app.post('/api/share-with-ehbg', async (req, res) => {
+  const resendKey = process.env.RESEND_API_KEY
+  const teamEmail = process.env.EHBG_TEAM_EMAIL ?? 'team@ehbg.com'
+
+  const { contact, brief, formData, matchedCollection } = req.body as {
+    contact: { name: string; email: string; phone?: string; note?: string }
+    brief: { estateName: string; estateSubtitle: string; estateNarrative: string; footerTagline: string; mainFloorZones: string[]; upperFloorZones: string[]; wellnessLevelZones: string[]; scipBenefits: Array<{ title: string }> }
+    formData: Record<string, unknown>
+    matchedCollection: string
+  }
+
+  if (!contact?.name || !contact?.email) {
+    res.status(400).json({ error: 'Name and email are required' })
+    return
+  }
+
+  const features = [
+    formData.wellnessSuite  && 'Wellness Suite',
+    formData.chefKitchen    && "Chef's Kitchen",
+    formData.poolSpa        && 'Pool & Spa',
+    formData.officStudio    && "Founder's Studio",
+    formData.homeschoolRoom && 'Learning Atelier',
+    formData.guestSuite     && 'Guest Suite',
+    formData.outdoorKitchen && 'Outdoor Kitchen',
+    formData.fireLounge     && 'Fire Lounge',
+    formData.greenhouse     && 'Greenhouse',
+    formData.orchard        && 'Orchard',
+    formData.reflectingPond && 'Reflecting Pond',
+    formData.sportCourt     && 'Sport Court',
+  ].filter(Boolean).join(', ') || 'None selected'
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>
+  body { font-family: Georgia, serif; color: #1A1614; background: #FDFAF6; margin: 0; padding: 0; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 40px 32px; }
+  .gold { color: #C9A84C; }
+  .label { font-family: Arial, sans-serif; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #9B9189; margin-bottom: 4px; }
+  .value { font-size: 15px; color: #1A1614; margin-bottom: 16px; }
+  .rule { border: none; border-top: 1px solid #E8E0D5; margin: 24px 0; }
+  .section { margin-bottom: 24px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 13px; font-family: Arial, sans-serif; letter-spacing: 0.2em; text-transform: uppercase; color: #C9A84C; margin: 0 0 20px; font-weight: normal; }
+  .tag { display: inline-block; border: 1px solid #E8E0D5; padding: 3px 10px; font-size: 12px; font-family: Arial, sans-serif; color: #5C4033; margin: 2px; }
+  .narrative { font-style: italic; color: #5C4033; line-height: 1.7; border-left: 3px solid #C9A84C; padding-left: 16px; margin: 0; }
+  .footer { font-size: 11px; color: #9B9189; font-family: Arial, sans-serif; margin-top: 32px; padding-top: 16px; border-top: 1px solid #E8E0D5; }
+</style></head>
+<body><div class="wrap">
+
+  <div style="margin-bottom:32px">
+    <div class="label">New Lead — My Everlasting Home</div>
+    <h1>${brief.estateName}</h1>
+    <h2>${matchedCollection}</h2>
+    <p style="color:#6B5D52;font-size:14px;margin:0">${brief.estateSubtitle}</p>
+  </div>
+
+  <hr class="rule">
+
+  <div class="section">
+    <div class="label">Contact</div>
+    <div class="value"><strong>${contact.name}</strong></div>
+    <div class="value">✉ <a href="mailto:${contact.email}" style="color:#C9A84C">${contact.email}</a></div>
+    ${contact.phone ? `<div class="value">☎ ${contact.phone}</div>` : ''}
+    ${contact.note ? `<div class="value" style="font-style:italic;color:#5C4033">"${contact.note}"</div>` : ''}
+  </div>
+
+  <hr class="rule">
+
+  <div class="section">
+    <div class="label">Estate Vision</div>
+    <p class="narrative">${brief.estateNarrative}</p>
+  </div>
+
+  <hr class="rule">
+
+  <div class="section">
+    <div class="label">Property Details</div>
+    <div class="value">Style: <strong>${formData.aestheticStyle ?? '—'}</strong></div>
+    <div class="value">Size: <strong>${formData.squareFootage ?? '—'} sf</strong> &nbsp;·&nbsp; Land: <strong>${formData.landSize ?? '—'}</strong></div>
+    <div class="value">Budget: <strong>${formData.budgetRange ?? '—'}</strong> &nbsp;·&nbsp; Timeline: <strong>${formData.buildTimeline ?? '—'}</strong></div>
+    <div class="value">Climate: <strong>${formData.climate ?? '—'}</strong> &nbsp;·&nbsp; Views: <strong>${formData.views ?? '—'}</strong></div>
+    <div class="value">Bedrooms: <strong>${formData.bedrooms ?? '—'}</strong> &nbsp;·&nbsp; Bathrooms: <strong>${formData.bathrooms ?? '—'}</strong> &nbsp;·&nbsp; Garage: <strong>${formData.garageSpaces ?? '—'}-car</strong></div>
+    <div class="value">Family: <strong>${formData.familySize ?? '—'}</strong>${formData.multigenerational ? ' &nbsp;·&nbsp; Multigenerational' : ''}</div>
+    <div class="value">Priorities: <strong>${Array.isArray(formData.lifestylePriorities) ? (formData.lifestylePriorities as string[]).join(', ') : '—'}</strong></div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="section">
+    <div class="label">Selected Features</div>
+    <div style="margin-top:8px">${features.split(', ').map((f: string) => `<span class="tag">${f}</span>`).join('')}</div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="section">
+    <div class="label">Main Floor</div>
+    <div class="value">${brief.mainFloorZones?.join(' · ') ?? '—'}</div>
+    <div class="label">Upper Floor</div>
+    <div class="value">${brief.upperFloorZones?.join(' · ') ?? '—'}</div>
+    ${brief.wellnessLevelZones?.length ? `<div class="label">Wellness Level</div><div class="value">${brief.wellnessLevelZones.join(' · ')}</div>` : ''}
+  </div>
+
+  <hr class="rule">
+
+  <div style="font-style:italic;color:#C9A84C;font-size:15px">${brief.footerTagline}</div>
+
+  <div class="footer">
+    Submitted via MyEverlastingHome.com — EHBG Lead Portal<br>
+    SCIP Interest: ${formData.scipInterest ?? 'Not specified'}
+  </div>
+
+</div></body></html>`
+
+  console.log(`\n--- SHARE WITH EHBG: ${contact.name} <${contact.email}> — ${brief.estateName} ---`)
+
+  // Send confirmation to the family
+  const familyHtml = `
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+  body { font-family: Georgia, serif; color: #1A1614; background: #FDFAF6; margin: 0; padding: 0; }
+  .wrap { max-width: 600px; margin: 0 auto; padding: 48px 32px; }
+</style></head><body><div class="wrap">
+  <div style="font-family:Arial,sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#C9A84C;margin-bottom:24px">My Everlasting Home · EHBG</div>
+  <h1 style="font-size:32px;margin:0 0 8px">${brief.estateName}</h1>
+  <p style="color:#6B5D52;font-style:italic;margin:0 0 32px">${brief.estateSubtitle}</p>
+  <p style="line-height:1.8;color:#3D2F27">Dear ${contact.name},</p>
+  <p style="line-height:1.8;color:#3D2F27">Your estate blueprint has been shared with the EHBG team. We'll be in touch within <strong>24–48 hours</strong> to schedule your complimentary design consultation.</p>
+  <p style="line-height:1.8;color:#3D2F27">In the meantime, your concept board — <em>${matchedCollection}</em> — is saved and ready to share with your family.</p>
+  <p style="border-left:3px solid #C9A84C;padding-left:16px;font-style:italic;color:#5C4033;margin:32px 0">${brief.estateNarrative}</p>
+  <p style="font-style:italic;color:#C9A84C;font-size:15px">${brief.footerTagline}</p>
+  <p style="font-family:Arial,sans-serif;font-size:11px;color:#9B9189;margin-top:40px;border-top:1px solid #E8E0D5;padding-top:16px">EHBG · Protected Legacy Estates™ · Built by EHBG</p>
+</div></body></html>`
+
+  if (!resendKey) {
+    // No Resend key — log the lead and return success so the UI still works
+    console.log('RESEND_API_KEY not set — lead logged to console only')
+    console.log(JSON.stringify({ contact, estateName: brief.estateName, collection: matchedCollection }, null, 2))
+    res.json({ success: true, message: 'Lead received (email delivery not configured)' })
+    return
+  }
+
+  try {
+    const resend = new Resend(resendKey)
+    const fromAddress = process.env.RESEND_FROM_EMAIL ?? 'leads@myeverlastinghome.com'
+
+    await Promise.all([
+      resend.emails.send({
+        from: `My Everlasting Home <${fromAddress}>`,
+        to: [teamEmail],
+        replyTo: contact.email,
+        subject: `New Lead: ${brief.estateName} — ${contact.name}`,
+        html,
+      }),
+      resend.emails.send({
+        from: `EHBG <${fromAddress}>`,
+        to: [contact.email],
+        subject: `Your Estate Blueprint — ${brief.estateName}`,
+        html: familyHtml,
+      }),
+    ])
+
+    console.log(`Emails sent to ${teamEmail} and ${contact.email}`)
+    res.json({ success: true })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('Share with EHBG email error:', message)
     res.status(500).json({ error: message })
   }
 })

@@ -163,7 +163,7 @@ export default function App() {
                 <X size={18} />
               </button>
               <img
-                src="/MockResModern.png"
+                src="/EstateAesthetics/MyEverlastingHomeVertical.png"
                 alt="My Everlasting Home Sample Blueprint"
                 className="w-full h-auto block"
               />

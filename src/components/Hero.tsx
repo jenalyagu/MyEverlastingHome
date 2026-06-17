@@ -110,7 +110,7 @@ export default function Hero({ onDesignEstate, onViewSample }: HeroProps) {
               className="mt-14 pt-8 border-t border-[#C4BDB5]/10 grid grid-cols-2 sm:grid-cols-4 gap-6"
             >
               {[
-                { num: '5', label: 'Estate Modules' },
+                { num: '4', label: 'Estate Modules' },
                 { num: 'SCIP', label: 'Construction System' },
                 { num: '20+', label: 'Lifestyle Parameters' },
                 { num: 'PDF', label: 'Builder-Ready Output' },

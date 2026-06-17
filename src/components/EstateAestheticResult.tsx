@@ -1,8 +1,9 @@
-import { forwardRef } from 'react'
-import { motion } from 'framer-motion'
+import { forwardRef, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { BoardBrief } from '../lib/buildBoardBrief'
 import type { AestheticMatch } from '../lib/matchEstateAesthetic'
 import type { EstateFormData } from '../lib/blueprintGenerator'
+import ShareWithEHBG from './ShareWithEHBG'
 
 interface Props {
   match: AestheticMatch
@@ -18,6 +19,7 @@ const FLOOR_LABELS = [
 ] as const
 
 const EstateAestheticResult = forwardRef<HTMLDivElement, Props>(function EstateAestheticResult({ match, brief, formData }, ref) {
+  const [showModal, setShowModal] = useState(false)
   const isWide = match.orientation === 'wide'
 
   const specItems = [
@@ -212,8 +214,27 @@ const EstateAestheticResult = forwardRef<HTMLDivElement, Props>(function EstateA
             <div className="text-[#9B9189] text-[11px]">My Everlasting Home · SCIP Estate</div>
           </div>
         </div>
-        <p className="font-serif text-[#6B5D52] text-sm italic text-right max-w-xs">{brief.footerTagline}</p>
+        <div className="flex flex-col items-end gap-2">
+          <p className="font-serif text-[#6B5D52] text-sm italic text-right max-w-xs">{brief.footerTagline}</p>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 bg-[#C9A84C] text-[#1A1614] px-5 py-2 text-[11px] font-semibold tracking-[0.15em] uppercase hover:bg-[#B8973B] transition-colors rounded-sm"
+          >
+            Connect with EHBG
+          </button>
+        </div>
       </motion.div>
+
+      <AnimatePresence>
+        {showModal && (
+          <ShareWithEHBG
+            brief={brief}
+            match={match}
+            formData={formData}
+            onClose={() => setShowModal(false)}
+          />
+        )}
+      </AnimatePresence>
 
     </div>
   )
