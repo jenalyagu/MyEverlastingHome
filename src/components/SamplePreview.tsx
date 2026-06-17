@@ -1,7 +1,6 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { ArrowRight } from 'lucide-react'
-import { mockResidenceData } from '../data/mockResidence'
 
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef(null)
@@ -40,49 +39,21 @@ export default function SamplePreview({ onViewSample }: SamplePreviewProps) {
           </div>
         </FadeIn>
 
-        {/* Hero card */}
         <FadeIn delay={0.1}>
-          <div className="relative bg-[#1A1614] rounded-sm overflow-hidden mb-8">
-            <div className="absolute inset-0" style={{
-              backgroundImage: 'radial-gradient(circle at 30% 60%, #3D2B1F 0%, transparent 60%), radial-gradient(circle at 80% 20%, #2C2420 0%, transparent 50%)',
-            }} />
-            <div className="relative p-8 md:p-12 lg:p-16">
-              <div className="flex flex-wrap gap-4 mb-8">
-                {mockResidenceData.stats.map((s) => (
-                  <div key={s.label} className="bg-[#2C2420]/60 border border-[#C4BDB5]/10 px-4 py-2 rounded-sm">
-                    <div className="font-serif text-xl text-[#C9A84C]">{s.value}</div>
-                    <div className="text-[#9B9189] text-xs tracking-widest uppercase">{s.label}</div>
-                  </div>
-                ))}
-              </div>
-              <h3 className="font-serif text-3xl md:text-4xl text-[#F7F3EE] mb-3">{mockResidenceData.name}</h3>
-              <p className="text-[#C4BDB5] max-w-2xl leading-relaxed">{mockResidenceData.tagline}</p>
-              <div className="mt-4 flex flex-wrap gap-4 text-xs text-[#9B9189]">
-                <span>{mockResidenceData.location}</span>
-                <span className="text-[#C4BDB5]/30">·</span>
-                <span>{mockResidenceData.style}</span>
-                <span className="text-[#C4BDB5]/30">·</span>
-                <span>{mockResidenceData.squareFootage}</span>
-              </div>
-            </div>
+          <div
+            className="w-full rounded-sm overflow-hidden border border-[#E8E0D5] shadow-sm cursor-pointer"
+            onClick={onViewSample}
+          >
+            <img
+              src="/EstateAesthetics/MyEverlastingHomeVertical.png"
+              alt="My Everlasting Home — Sample Estate Blueprint"
+              className="w-full object-contain"
+            />
           </div>
         </FadeIn>
 
-        {/* Room grid preview */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {mockResidenceData.rooms.slice(0, 6).map((room, i) => (
-            <FadeIn key={room.name} delay={0.05 * i}>
-              <div className="p-5 border border-[#E8E0D5] bg-white hover:border-[#C9A84C]/30 transition-colors group rounded-sm">
-                <div className="text-[#9B9189] text-xs tracking-widest uppercase font-medium mb-1">{room.category}</div>
-                <div className="font-serif text-lg text-[#1A1614] mb-2">{room.name}</div>
-                <div className="text-[#9B9189] text-sm leading-relaxed">{room.notes}</div>
-              </div>
-            </FadeIn>
-          ))}
-        </div>
-
-        <FadeIn delay={0.3}>
-          <div className="text-center">
+        <FadeIn delay={0.2}>
+          <div className="text-center mt-10">
             <button
               onClick={onViewSample}
               className="border border-[#1A1614] text-[#1A1614] px-8 py-3.5 font-medium text-sm tracking-wide hover:bg-[#1A1614] hover:text-[#F7F3EE] transition-all duration-300 rounded-sm"

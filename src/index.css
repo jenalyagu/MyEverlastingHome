@@ -38,3 +38,32 @@
     min-height: 100vh;
   }
 }
+
+@media print {
+  @page {
+    size: letter landscape;
+    margin: 0.4in 0.5in;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Force backgrounds to print */
+  [style*="background"] {
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* Avoid breaking inside key sections */
+  .print-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Page breaks before major sections */
+  .print-break-before {
+    break-before: page;
+    page-break-before: always;
+  }
+}

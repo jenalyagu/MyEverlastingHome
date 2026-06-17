@@ -6,11 +6,45 @@ import { type EstateFormData } from '../lib/blueprintGenerator'
 const LIFESTYLE_OPTIONS = [
   'Slow living', 'Entertaining', 'Wellness', 'Food & gardening',
   'Travel home base', 'Homeschooling', 'Luxury', 'Privacy', 'Cars & motorcycles',
+  'Creative / Maker', 'Resilience & Preparedness',
 ]
 
 const AESTHETIC_OPTIONS = [
-  'Modern Organic', 'Traditional / Classic', 'Mediterranean / Spanish',
-  'Farmhouse / Agrarian', 'Minimalist / Contemporary',
+  // Western / European
+  'Modern Organic',
+  'Traditional / Classic',
+  'Mediterranean / Spanish',
+  'Greek / Aegean',
+  'French Countryside',
+  'Farmhouse / Agrarian',
+  'Texas Hill Country',
+  'American / Patriot',
+  // Contemporary
+  'Minimalist / Contemporary',
+  'Stealth Wealth',
+  'Dynasty / Legacy Builder',
+  'Music & Entertainment',
+  // Automotive / Adventure
+  'Car Vault / Collector',
+  'Executive Motor Court',
+  'Backyard Track House',
+  'Little Drivers\' House',
+  'Weekend Cars & Coffee',
+  'Overland / Adventure Homestead',
+  // Nature / Climate
+  'Alpine / Mountain',
+  'Scandinavian / Nordic',
+  'Tropical Modern',
+  'Wabi-Sabi / Japanese',
+  // Global / Cultural
+  'Moroccan / Riad',
+  'Vastu / Indian',
+  'Maharaja / South Asian',
+  'Feng Shui / Chinese',
+  'Filipino / Bahay Legacy',
+  'Multigenerational / Banyan',
+  // Unique
+  'Celestial / Cosmic',
 ]
 
 const BUDGET_OPTIONS = [
@@ -151,11 +185,12 @@ function Select({ value, onChange, options, placeholder }: { value: string; onCh
 
 interface EstateFormProps {
   onComplete: (data: EstateFormData) => void
+  initialData?: Partial<EstateFormData>
 }
 
-export default function EstateForm({ onComplete }: EstateFormProps) {
+export default function EstateForm({ onComplete, initialData }: EstateFormProps) {
   const [step, setStep] = useState(0)
-  const [data, setData] = useState<EstateFormData>(emptyForm)
+  const [data, setData] = useState<EstateFormData>({ ...emptyForm, ...initialData })
   const [dir, setDir] = useState(1)
 
   const update = <K extends keyof EstateFormData>(key: K, val: EstateFormData[K]) =>
@@ -348,7 +383,7 @@ export default function EstateForm({ onComplete }: EstateFormProps) {
   ]
 
   return (
-    <section id="intake" className="bg-[#F7F3EE] py-24 px-6 lg:px-10 border-t border-[#E8E0D5]">
+    <section id="intake" className="bg-[#F7F3EE] py-16 lg:py-24 px-4 lg:px-10 border-t border-[#E8E0D5]">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-10">
@@ -356,7 +391,7 @@ export default function EstateForm({ onComplete }: EstateFormProps) {
             <div className="h-px w-8 bg-[#C9A84C]" />
             <span className="text-[#C9A84C] text-xs font-medium tracking-[0.2em] uppercase">Estate Intake</span>
           </div>
-          <h2 className="font-serif text-4xl md:text-5xl text-[#1A1614] leading-tight">
+          <h2 className="font-serif text-3xl md:text-5xl text-[#1A1614] leading-tight">
             Design your estate.
           </h2>
           <p className="mt-3 text-[#9B9189] max-w-lg">
@@ -392,7 +427,9 @@ export default function EstateForm({ onComplete }: EstateFormProps) {
         </div>
 
         {/* Form card */}
-        <div className="bg-white border border-[#E8E0D5] rounded-sm p-6 md:p-10 overflow-hidden">
+        <div className="bg-white border border-[#E8E0D5] rounded-sm p-5 md:p-10">
+          {/* overflow-hidden scoped here so it clips the slide animation but not the card content */}
+          <div className="overflow-hidden">
           <AnimatePresence mode="wait" custom={dir}>
             <motion.div
               key={step}
@@ -405,6 +442,7 @@ export default function EstateForm({ onComplete }: EstateFormProps) {
               {steps[step]}
             </motion.div>
           </AnimatePresence>
+          </div>
 
           {/* Nav */}
           <div className="flex items-center justify-between mt-10 pt-6 border-t border-[#E8E0D5]">

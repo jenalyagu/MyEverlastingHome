@@ -42,7 +42,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-[#F7F3EE] py-28 px-6 lg:px-10">
+    <section id="how-it-works" className="bg-[#F7F3EE] py-16 lg:py-28 px-6 lg:px-10">
       <div className="max-w-7xl mx-auto">
         <FadeIn>
           <div className="flex items-center gap-3 mb-4">
@@ -66,7 +66,7 @@ export default function HowItWorks() {
           <div className="space-y-6">
             {steps.map((step, i) => (
               <FadeIn key={step.num} delay={i * 0.1}>
-                <div className="flex gap-8 items-start">
+                <div className="flex gap-5 md:gap-8 items-start">
                   <div className="relative flex-shrink-0">
                     <div className="w-14 h-14 border-2 border-[#E8E0D5] bg-[#F7F3EE] rounded-sm flex items-center justify-center z-10 relative">
                       <span className="font-serif text-[#C9A84C] text-lg font-medium">{step.num}</span>

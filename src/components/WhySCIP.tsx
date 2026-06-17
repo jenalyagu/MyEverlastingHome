@@ -33,7 +33,7 @@ const benefits = [
 
 export default function WhySCIP() {
   return (
-    <section id="scip" className="bg-[#1A1614] py-28 px-6 lg:px-10">
+    <section id="scip" className="bg-[#1A1614] py-16 lg:py-28 px-6 lg:px-10">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           <div>
@@ -73,7 +73,7 @@ export default function WhySCIP() {
           <FadeIn delay={0.2}>
             <div className="lg:sticky lg:top-28">
               {/* Disclaimer card */}
-              <div className="bg-[#2C2420] border border-[#C9A84C]/20 p-8 rounded-sm mb-6">
+              <div className="bg-[#2C2420] border border-[#C9A84C]/20 p-5 md:p-8 rounded-sm mb-6">
                 <div className="flex items-start gap-3 mb-4">
                   <AlertCircle size={18} className="text-[#C9A84C] flex-shrink-0 mt-0.5" />
                   <span className="text-[#C9A84C] text-sm font-medium tracking-wide">Important Disclaimer</span>

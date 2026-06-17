@@ -1,0 +1,11 @@
+{
+  "family_name": "Mock",
+  "estate_title": "The Mock Residence",
+  "location": "Texas Hill Country / Houston region",
+  "architecture_style": "modern limestone estate with warm wood, steel, glass, SCIP construction aesthetic",
+  "family_values": ["beauty", "wellness", "legacy", "family connection", "resilience"],
+  "household_needs": ["homeschool library", "founder office", "wellness suite", "chef's kitchen", "scullery", "pool and spa", "greenhouse", "sport court", "four-car garage"],
+  "lifestyle_moments": ["family feasts", "garden-to-table meals", "children playing outside", "slow mornings", "fire lounge nights", "pool weekends"],
+  "resilience_priorities": ["energy efficiency", "strength", "quiet interiors", "healthy living", "built to endure"],
+  "disclaimer_required": true
+}

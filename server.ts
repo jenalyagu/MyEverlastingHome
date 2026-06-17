@@ -3,6 +3,13 @@ import express from 'express'
 import cors from 'cors'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import Anthropic from '@anthropic-ai/sdk'
+import Stripe from 'stripe'
+import { createOpenAIImageProvider } from './src/lib/imageProviders/openaiImageProvider.js'
+import { createGeminiImageProvider } from './src/lib/imageProviders/geminiImageProvider.js'
+import { createDalleImageProvider } from './src/lib/imageProviders/dalleImageProvider.js'
+import { IMAGE_MODELS, DEFAULT_PROVIDER } from './src/lib/imageProviderConfig.js'
+import type { ProviderName, GenerateImageRequest, GenerateImageResult } from './src/lib/imageProviders/imageProviderTypes.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -10,7 +17,7 @@ const PORT = process.env.PORT || 3001
 const IS_PROD = process.env.NODE_ENV === 'production'
 
 app.use(cors())
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 
 if (IS_PROD) {
   const distPath = path.join(__dirname, 'dist')
@@ -445,49 +452,346 @@ app.post('/api/concept-board', async (req, res) => {
 })
 
 // ---------------------------------------------------------------------------
-// DALL-E 3 image generation endpoint
+// Rate-limited image queue (respects OpenAI's 5 imgs/min limit)
 // ---------------------------------------------------------------------------
 
-app.post('/api/generate-image', async (req, res) => {
+interface QueuedJob {
+  resolve: (result: GenerateImageResult) => void
+  reject: (err: Error) => void
+  run: () => Promise<GenerateImageResult>
+}
+
+const imageQueue: QueuedJob[] = []
+let activeJobs = 0
+const MAX_CONCURRENT = 4          // stay under 5/min with breathing room
+const RETRY_DELAY_MS = 15_000     // wait 15s after a rate-limit error
+
+async function drainQueue() {
+  while (imageQueue.length > 0 && activeJobs < MAX_CONCURRENT) {
+    const job = imageQueue.shift()!
+    activeJobs++
+    job.run()
+      .then(result => { job.resolve(result); activeJobs--; drainQueue() })
+      .catch(async (err: Error) => {
+        const isRateLimit = err.message?.toLowerCase().includes('rate limit') ||
+                            err.message?.toLowerCase().includes('429')
+        if (isRateLimit) {
+          // Put the job back at the front and pause the queue
+          imageQueue.unshift(job)
+          activeJobs--
+          console.log(`Rate limit hit — pausing queue ${RETRY_DELAY_MS / 1000}s`)
+          await new Promise(r => setTimeout(r, RETRY_DELAY_MS))
+          drainQueue()
+        } else {
+          job.reject(err)
+          activeJobs--
+          drainQueue()
+        }
+      })
+  }
+}
+
+function enqueueImageJob(run: () => Promise<GenerateImageResult>): Promise<GenerateImageResult> {
+  return new Promise((resolve, reject) => {
+    imageQueue.push({ resolve, reject, run })
+    drainQueue()
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Provider-agnostic image generation endpoint
+// ---------------------------------------------------------------------------
+
+function resolveProvider(requestedProvider: ProviderName | undefined) {
+  const selected: ProviderName = requestedProvider ?? (process.env.IMAGE_PROVIDER as ProviderName) ?? DEFAULT_PROVIDER
   const openaiKey = process.env.OPENAI_API_KEY
-  if (!openaiKey) {
-    res.status(500).json({ error: 'OPENAI_API_KEY is not set. Add it to your .env file.' })
+  const geminiKey = process.env.GOOGLE_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY
+
+  if (selected === 'openai' && openaiKey) {
+    const model = process.env.OPENAI_IMAGE_MODEL ?? IMAGE_MODELS.openai.defaultModel
+    return createOpenAIImageProvider(openaiKey, model)
+  }
+  if (selected === 'gemini' && geminiKey) {
+    const model = process.env.GEMINI_IMAGE_MODEL ?? IMAGE_MODELS.gemini.defaultModel
+    return createGeminiImageProvider(geminiKey, model)
+  }
+  if (selected === 'dalle' && openaiKey) {
+    return createDalleImageProvider(openaiKey)
+  }
+
+  // Auto-fallback chain: openai → dalle → gemini
+  if (openaiKey) return createDalleImageProvider(openaiKey)
+  if (geminiKey) {
+    const model = process.env.GEMINI_IMAGE_MODEL ?? IMAGE_MODELS.gemini.defaultModel
+    return createGeminiImageProvider(geminiKey, model)
+  }
+
+  return null
+}
+
+app.post('/api/generate-image', async (req, res) => {
+  const body = req.body as GenerateImageRequest & { provider?: ProviderName; formData?: Record<string, unknown> }
+
+  // Support legacy calls that pass raw form data (uses buildDreamHomePrompt)
+  const prompt: string = body.prompt ?? (body.formData ? buildDreamHomePrompt(body.formData) : '')
+  if (!prompt) {
+    res.status(400).json({ error: 'prompt is required' })
+    return
+  }
+
+  const provider = resolveProvider(body.provider)
+  if (!provider) {
+    res.status(500).json({ error: 'No image provider is configured. Set OPENAI_API_KEY or GOOGLE_GEMINI_API_KEY in .env' })
+    return
+  }
+
+  console.log(`\n--- IMAGE GENERATION [${provider.name}/${provider.model}] section:${body.sectionName ?? '?'} ---`)
+
+  try {
+    const req = {
+      prompt,
+      aspectRatio: body.aspectRatio ?? '16:9' as const,
+      quality: body.quality ?? 'medium' as const,
+      referenceImageUrl: body.referenceImageUrl,
+      outputType: 'url' as const,
+      sectionName: body.sectionName,
+      formId: body.formId,
+    }
+    const result: GenerateImageResult = await enqueueImageJob(() => provider.generate(req))
+    res.json(result)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(`Image generation error [${provider.name}]:`, message)
+    res.status(500).json({ error: message })
+  }
+})
+
+// Active provider info (for admin UI)
+app.get('/api/image-provider', (_req, res) => {
+  const selected: ProviderName = (process.env.IMAGE_PROVIDER as ProviderName) ?? DEFAULT_PROVIDER
+  const provider = resolveProvider(selected)
+  res.json({
+    active: provider ? { name: provider.name, model: provider.model, label: IMAGE_MODELS[provider.name].label } : null,
+    available: {
+      openai: !!process.env.OPENAI_API_KEY,
+      gemini: !!(process.env.GOOGLE_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY),
+      dalle: !!process.env.OPENAI_API_KEY,
+    },
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Copy generation — Claude writes personalized estate name, narrative, etc.
+// ---------------------------------------------------------------------------
+app.post('/api/generate-copy', async (req, res) => {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    res.status(500).json({ error: 'ANTHROPIC_API_KEY is not configured' })
+    return
+  }
+
+  const formData = req.body?.formData
+  if (!formData) {
+    res.status(400).json({ error: 'formData is required' })
+    return
+  }
+
+  const client = new Anthropic({ apiKey })
+
+  const outdoorFeatures = [
+    formData.poolSpa && 'pool & spa',
+    formData.orchard && 'fruit orchard',
+    formData.greenhouse && 'greenhouse',
+    formData.reflectingPond && 'reflecting pond',
+    formData.outdoorKitchen && 'outdoor kitchen',
+    formData.fireLounge && 'fire lounge',
+    formData.sportCourt && 'sport court',
+    formData.playLawn && 'play lawn',
+    formData.raisedBeds && 'raised garden beds',
+  ].filter(Boolean).join(', ') || 'curated landscaping'
+
+  const interiorFeatures = [
+    formData.wellnessSuite && 'wellness suite (sauna, cold plunge, spa)',
+    formData.chefKitchen && "chef's kitchen",
+    formData.homeschoolRoom && 'learning atelier',
+    formData.officStudio && "founder's studio",
+    formData.guestSuite && 'guest suite',
+    formData.pantry && 'walk-in pantry',
+  ].filter(Boolean).join(', ') || 'thoughtfully appointed rooms'
+
+  const prompt = `You are writing luxury real estate copy for a personalized AI-generated estate concept board for My Everlasting Home — a SCIP (Structural Concrete Insulated Panel) custom estate builder.
+
+CRITICAL CONTEXT — THIS IS A SCIP HOME:
+SCIP construction uses a structural concrete core reinforced with steel mesh, sandwiched between insulating EPS foam panels, finished with reinforced concrete render on both faces. The result is a monolithic, fortress-like structure with walls 8–12 inches thick, exceptional thermal mass, near-silent interiors, and a build quality that outlasts wood-frame construction by generations. SCIP homes are disaster-resistant (hurricane, seismic, fire), energy-efficient, and built without the off-gassing, mold vulnerability, or pest risk of conventional framing. This is not a green gimmick — it is a fundamentally different class of building.
+
+Your copy must reflect this. The estate narrative should reference the permanence, solidity, and performance of the build — not just the aesthetics. Words like "built to last generations," "fortress-like serenity," "thermal mass," "monolithic construction," "concrete core," "indestructible," "silent walls," "legacy build" are appropriate. Avoid generic luxury real estate phrases like "open concept," "smart home," or "turnkey."
+
+Generate the following fields for this specific family's dream estate:
+
+FAMILY & LIFESTYLE:
+- Family size: ${formData.familySize}
+- Children: ${formData.children}
+- Multigenerational: ${formData.multigenerational ? 'yes' : 'no'}
+- Lifestyle priorities: ${formData.lifestylePriorities?.join(', ') || 'beauty, wellness, legacy'}
+
+PROPERTY:
+- Land size: ${formData.landSize}
+- Climate / region: ${formData.climate}
+- Terrain: ${formData.terrain}
+- Views: ${formData.views}
+
+HOME PROGRAM:
+- Bedrooms: ${formData.bedrooms}, Bathrooms: ${formData.bathrooms}
+- Square footage: ${formData.squareFootage} sq ft
+- Garage: ${formData.garageSpaces} cars
+- Interior features: ${interiorFeatures}
+
+OUTDOOR ESTATE:
+- ${outdoorFeatures}
+
+STYLE & BUILD:
+- Aesthetic: ${formData.aestheticStyle}
+- Budget range: ${formData.budgetRange}
+- Timeline: ${formData.buildTimeline}
+
+Return ONLY a valid JSON object with these exact keys:
+{
+  "estateName": "A unique, elegant estate name (e.g. 'The Hawthorn Reserve', 'Casa del Viento', 'Ridgeline House'). 2–4 words. Should reflect the aesthetic style, climate, or family character. Not generic.",
+  "estateSubtitle": "One sentence, 10–18 words. Describes the essence of this specific estate — what makes it theirs. Mentions family, lifestyle priority, or setting.",
+  "estateNarrative": "Two sentences, 40–60 words total. Evocative, grounded, specific to their form answers. Mentions the climate/region, aesthetic materials, and their top lifestyle priority. Reads like editorial copy in a luxury architecture magazine.",
+  "editorialNote": "One short line, 8–14 words, handwritten-note style. Warm, personal, aspirational. Like a caption on a mood board. No quotes.",
+  "footerTagline": "4–7 words. Gold italic serif. A quiet family motto or generational sentiment. E.g. 'This is our legacy' or 'Rooted in beauty. Built to last.'",
+  "footerMonogram": "2–3 uppercase letters derived from the estate name initials."
+}
+
+No explanation. No markdown. Return only the raw JSON object.`
+
+  console.log('\n--- COPY GENERATION [Claude] ---')
+
+  try {
+    const message = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 800,
+      messages: [{ role: 'user', content: prompt }],
+    })
+
+    const text = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) throw new Error('No JSON found in Claude response')
+
+    const copy = JSON.parse(jsonMatch[0])
+    console.log(`Estate name: "${copy.estateName}"`)
+    res.json(copy)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('Copy generation error:', message)
+    res.status(500).json({ error: message })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// Stripe — $49 pay-per-board checkout
+// ---------------------------------------------------------------------------
+app.post('/api/create-checkout-session', async (req, res) => {
+  const secretKey = process.env.STRIPE_SECRET_KEY
+  if (!secretKey || secretKey.includes('YOUR_SECRET_KEY')) {
+    res.status(500).json({ error: 'Stripe is not configured. Add STRIPE_SECRET_KEY to .env' })
+    return
+  }
+
+  const stripe = new Stripe(secretKey)
+  const price = parseInt(process.env.BOARD_PRICE_CENTS ?? '4900')
+  const origin = req.headers.origin ?? `http://localhost:${PORT}`
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          unit_amount: price,
+          product_data: {
+            name: 'Estate Concept Board',
+            description: 'AI-generated luxury estate concept board — personalized to your family, lifestyle, and property.',
+          },
+        },
+        quantity: 1,
+      }],
+      success_url: `${origin}/?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?payment_cancelled=true`,
+    })
+    res.json({ url: session.url, sessionId: session.id })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('Stripe checkout error:', message)
+    res.status(500).json({ error: message })
+  }
+})
+
+app.get('/api/verify-payment', async (req, res) => {
+  const secretKey = process.env.STRIPE_SECRET_KEY
+  if (!secretKey || secretKey.includes('YOUR_SECRET_KEY')) {
+    res.status(500).json({ error: 'Stripe is not configured' })
+    return
+  }
+
+  const sessionId = req.query.session_id as string
+  if (!sessionId) {
+    res.status(400).json({ error: 'session_id is required' })
     return
   }
 
   try {
-    const prompt = buildDreamHomePrompt(req.body)
-    console.log('\n--- DALL-E 3 PROMPT ---\n' + prompt + '\n---\n')
-
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${openaiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt,
-        n: 1,
-        size: '1792x1024',
-        quality: 'hd',
-        style: 'natural',
-      }),
-    })
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}))
-      throw new Error((err as { error?: { message?: string } }).error?.message || `OpenAI error ${response.status}`)
-    }
-
-    const result = await response.json() as { data: Array<{ url: string }> }
-    const url = result.data?.[0]?.url
-    if (!url) throw new Error('No image returned from DALL-E 3')
-
-    res.json({ url })
+    const stripe = new Stripe(secretKey)
+    const session = await stripe.checkout.sessions.retrieve(sessionId)
+    const paid = session.payment_status === 'paid'
+    res.json({ paid, status: session.payment_status, sessionId })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
-    console.error('Image generation error:', message)
+    res.status(500).json({ error: message })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// Board brief — generates copy via Claude, fills all template slots, returns
+// the complete brief as JSON + markdown string
+// ---------------------------------------------------------------------------
+app.post('/api/generate-brief', async (req, res) => {
+  const formData = req.body?.formData
+  if (!formData) {
+    res.status(400).json({ error: 'formData is required' })
+    return
+  }
+
+  // Step 1: generate AI copy (same logic as /api/generate-copy)
+  let copyOverrides: Record<string, string> = {}
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (apiKey) {
+    try {
+      const copyRes = await fetch(`http://localhost:${PORT}/api/generate-copy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formData }),
+      })
+      if (copyRes.ok) {
+        copyOverrides = await copyRes.json() as Record<string, string>
+      }
+    } catch {
+      // Proceed with template fallbacks if copy generation fails
+    }
+  }
+
+  // Step 2: build full brief using deterministic formulas + AI copy
+  try {
+    const { buildBoardBrief, briefToMarkdown } = await import('./src/lib/buildBoardBrief.js')
+    const brief = buildBoardBrief(formData, copyOverrides)
+    const markdown = briefToMarkdown(brief)
+    console.log(`\n--- BOARD BRIEF generated for "${brief.estateName}" ---`)
+    res.json({ brief, markdown })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('Brief generation error:', message)
     res.status(500).json({ error: message })
   }
 })
