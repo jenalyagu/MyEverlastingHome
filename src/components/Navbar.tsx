@@ -28,7 +28,7 @@ export default function Navbar({ onDesignEstate, onViewSample }: NavbarProps) {
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16 lg:h-20">
-          <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2">
+          <button onClick={onDesignEstate} className="flex items-center gap-2">
             <img src="/Logos/ehbg-logo.png" alt="My Everlasting Home" className="h-9 w-auto" />
           </button>
 
