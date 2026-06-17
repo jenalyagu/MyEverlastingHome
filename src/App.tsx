@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import Navbar from './components/Navbar'
@@ -10,73 +10,21 @@ import SamplePreview from './components/SamplePreview'
 import EstateForm from './components/EstateForm'
 import Footer from './components/Footer'
 import BlueprintPage from './pages/BlueprintPage'
-import PaywallScreen from './components/PaywallScreen'
 import { generateBlueprint, type EstateFormData, type Blueprint } from './lib/blueprintGenerator'
 
-type View = 'landing' | 'paywall' | 'blueprint'
-
-const FORM_STORAGE_KEY = 'meh_pending_form_data'
+type View = 'landing' | 'blueprint'
 
 export default function App() {
   const [view, setView] = useState<View>('landing')
   const [blueprint, setBlueprint] = useState<Blueprint | null>(null)
   const [formData, setFormData] = useState<EstateFormData | null>(null)
   const [sampleModalOpen, setSampleModalOpen] = useState(false)
-  const [verifyingPayment, setVerifyingPayment] = useState(false)
-
-  // Handle return from Stripe checkout
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const paymentSuccess = params.get('payment_success')
-    const sessionId = params.get('session_id')
-    const paymentCancelled = params.get('payment_cancelled')
-
-    if (paymentCancelled) {
-      // Restore form data, go back to paywall
-      const saved = sessionStorage.getItem(FORM_STORAGE_KEY)
-      if (saved) {
-        try {
-          const data = JSON.parse(saved) as EstateFormData
-          setFormData(data)
-          setBlueprint(generateBlueprint(data))
-          setView('paywall')
-        } catch { /* ignore */ }
-      }
-      window.history.replaceState({}, '', '/')
-      return
-    }
-
-    if (paymentSuccess && sessionId) {
-      window.history.replaceState({}, '', '/')
-      const saved = sessionStorage.getItem(FORM_STORAGE_KEY)
-      if (!saved) return
-
-      setVerifyingPayment(true)
-      fetch(`/api/verify-payment?session_id=${sessionId}`)
-        .then(r => r.json())
-        .then((result: { paid?: boolean }) => {
-          if (result.paid) {
-            const data = JSON.parse(saved) as EstateFormData
-            sessionStorage.removeItem(FORM_STORAGE_KEY)
-            const bp = generateBlueprint(data)
-            setFormData(data)
-            setBlueprint(bp)
-            setView('blueprint')
-            window.scrollTo(0, 0)
-          }
-        })
-        .catch(() => { /* silently ignore — user stays on landing */ })
-        .finally(() => setVerifyingPayment(false))
-    }
-  }, [])
 
   const handleFormComplete = (data: EstateFormData) => {
-    // Save form data before Stripe redirect
-    sessionStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(data))
     const bp = generateBlueprint(data)
     setFormData(data)
     setBlueprint(bp)
-    setView('paywall')
+    setView('blueprint')
     window.scrollTo(0, 0)
   }
 
@@ -89,30 +37,6 @@ export default function App() {
     } else {
       document.getElementById('intake')?.scrollIntoView({ behavior: 'smooth' })
     }
-  }
-
-  // Payment verification loading screen
-  if (verifyingPayment) {
-    return (
-      <div className="fixed inset-0 bg-[#1A1614] flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 border border-[#C9A84C]/40 flex items-center justify-center">
-          <span className="font-serif text-[#C9A84C] text-lg">M</span>
-        </div>
-        <div className="h-px w-8 bg-[#C9A84C]" />
-        <p className="text-[#9B9189] text-xs tracking-[0.2em] uppercase">Confirming your payment…</p>
-      </div>
-    )
-  }
-
-  if (view === 'paywall' && formData) {
-    return (
-      <PaywallScreen
-        onBack={() => {
-          setView('landing')
-          setTimeout(() => document.getElementById('intake')?.scrollIntoView({ behavior: 'smooth' }), 100)
-        }}
-      />
-    )
   }
 
   if (view === 'blueprint' && blueprint && formData) {
