@@ -5,7 +5,7 @@ import { type EstateFormData } from '../lib/blueprintGenerator'
 
 const LIFESTYLE_OPTIONS = [
   'Slow living', 'Entertaining', 'Wellness', 'Food & gardening',
-  'Travel home base', 'Homeschooling', 'Luxury', 'Privacy', 'Cars & motorcycles',
+  'Homeschooling', 'Luxury', 'Privacy', 'Cars & motorcycles',
   'Creative / Maker', 'Resilience & Preparedness',
 ]
 
@@ -51,24 +51,7 @@ const BUDGET_OPTIONS = [
   'Under $1.5M', '$1.5M–$2.5M', '$2.5M–$4M', '$4M–$7M', '$7M–$12M', '$12M+',
 ]
 
-const TIMELINE_OPTIONS = [
-  '12–18 months', '18–24 months', '24–36 months', '36+ months',
-]
-
-const SCIP_OPTIONS = [
-  'Very interested — SCIP is a priority',
-  'Open to it — want to learn more',
-  'Undecided — let the design guide it',
-  'Not sure SCIP is right for us',
-]
-
-const stepLabels = [
-  'Family & Lifestyle',
-  'Property & Climate',
-  'Home Program',
-  'Outdoor Estate',
-  'Style & Budget',
-]
+const stepLabels = ['Family & Lifestyle', 'Style & Setting', 'Home Details']
 
 const emptyForm: EstateFormData = {
   familySize: '',
@@ -203,11 +186,11 @@ export default function EstateForm({ onComplete, initialData }: EstateFormProps)
     })
   }
 
-  const next = () => { setDir(1); setStep((s) => Math.min(s + 1, 4)) }
+  const next = () => { setDir(1); setStep((s) => Math.min(s + 1, 2)) }
   const prev = () => { setDir(-1); setStep((s) => Math.max(s - 1, 0)) }
 
   const steps = [
-    // Step 1
+    // Step 1 — Family & Lifestyle
     <div key="step1" className="space-y-8">
       <div>
         <h3 className="font-serif text-2xl text-[#1A1614] mb-1">Family & Lifestyle</h3>
@@ -241,42 +224,36 @@ export default function EstateForm({ onComplete, initialData }: EstateFormProps)
       </Field>
     </div>,
 
-    // Step 2
+    // Step 2 — Style & Setting
     <div key="step2" className="space-y-8">
       <div>
-        <h3 className="font-serif text-2xl text-[#1A1614] mb-1">Property & Climate</h3>
-        <p className="text-[#9B9189] text-sm">Where and how will this estate be situated?</p>
+        <h3 className="font-serif text-2xl text-[#1A1614] mb-1">Style & Setting</h3>
+        <p className="text-[#9B9189] text-sm">Choose your aesthetic and where this estate will be built.</p>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-6">
-        <Field label="Land Size">
-          <Select value={data.landSize} onChange={(v) => update('landSize', v)} options={['Under 1 acre', '1–2 acres', '2–5 acres', '5–10 acres', '10–20 acres', '20+ acres']} placeholder="Select..." />
-        </Field>
-        <Field label="Climate Zone">
-          <Select value={data.climate} onChange={(v) => update('climate', v)} options={['Hot & humid', 'Hot & dry / Desert', 'Mixed / Four seasons', 'Mild / Coastal', 'Cold / Northern']} placeholder="Select..." />
-        </Field>
-        <Field label="Terrain">
-          <Select value={data.terrain} onChange={(v) => update('terrain', v)} options={['Flat / Level', 'Gentle slope', 'Hilly / Rolling', 'Wooded', 'Waterfront']} placeholder="Select..." />
-        </Field>
-        <Field label="Views">
-          <Select value={data.views} onChange={(v) => update('views', v)} options={['Mountain / Hill', 'Valley / Meadow', 'City skyline', 'Water / Lake', 'Forest', 'Open sky']} placeholder="Select..." />
-        </Field>
-      </div>
-
-      <Field label="Privacy needs">
+      <Field label="Aesthetic style">
         <div className="grid sm:grid-cols-2 gap-2">
-          {['Maximum privacy — gated, screened', 'High privacy — natural screening', 'Moderate — standard setbacks', 'Open — community setting'].map((opt) => (
-            <OptionCard key={opt} label={opt} selected={data.privacyNeeds === opt} onClick={() => update('privacyNeeds', opt)} />
+          {AESTHETIC_OPTIONS.map((opt) => (
+            <OptionCard key={opt} label={opt} selected={data.aestheticStyle === opt} onClick={() => update('aestheticStyle', opt)} />
           ))}
         </div>
       </Field>
+
+      <div className="grid sm:grid-cols-2 gap-6">
+        <Field label="Climate Zone">
+          <Select value={data.climate} onChange={(v) => update('climate', v)} options={['Hot & humid', 'Hot & dry / Desert', 'Mixed / Four seasons', 'Mild / Coastal', 'Cold / Northern']} placeholder="Select..." />
+        </Field>
+        <Field label="Land Size">
+          <Select value={data.landSize} onChange={(v) => update('landSize', v)} options={['Under 1 acre', '1–2 acres', '2–5 acres', '5–10 acres', '10–20 acres', '20+ acres']} placeholder="Select..." />
+        </Field>
+      </div>
     </div>,
 
-    // Step 3
+    // Step 3 — Home Details
     <div key="step3" className="space-y-8">
       <div>
-        <h3 className="font-serif text-2xl text-[#1A1614] mb-1">Home Program</h3>
-        <p className="text-[#9B9189] text-sm">Define the rooms and spaces your family needs.</p>
+        <h3 className="font-serif text-2xl text-[#1A1614] mb-1">Home Details</h3>
+        <p className="text-[#9B9189] text-sm">Size, budget, and the spaces that matter most.</p>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -294,91 +271,26 @@ export default function EstateForm({ onComplete, initialData }: EstateFormProps)
         </Field>
       </div>
 
-      <Field label="Specialty spaces">
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Toggle label="Guest Suite / Casita" checked={data.guestSuite} onChange={(v) => update('guestSuite', v)} />
-          <Toggle label="Office / Studio" checked={data.officStudio} onChange={(v) => update('officStudio', v)} />
-          <Toggle label="Homeschool Room" checked={data.homeschoolRoom} onChange={(v) => update('homeschoolRoom', v)} />
-          <Toggle label="Wellness Suite" description="Gym, sauna, cold plunge" checked={data.wellnessSuite} onChange={(v) => update('wellnessSuite', v)} />
-          <Toggle label="Chef's Kitchen + Scullery" checked={data.chefKitchen} onChange={(v) => update('chefKitchen', v)} />
-          <Toggle label="Walk-In Pantry" checked={data.pantry} onChange={(v) => update('pantry', v)} />
-          <Toggle label="Laundry / Mudroom Hub" checked={data.laundryMudroom} onChange={(v) => update('laundryMudroom', v)} />
-        </div>
-      </Field>
-    </div>,
-
-    // Step 4
-    <div key="step4" className="space-y-8">
-      <div>
-        <h3 className="font-serif text-2xl text-[#1A1614] mb-1">Outdoor Estate</h3>
-        <p className="text-[#9B9189] text-sm">Select the outdoor zones that define your estate lifestyle.</p>
-      </div>
-
-      <Field label="Water & recreation">
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Toggle label="Pool & Spa" checked={data.poolSpa} onChange={(v) => update('poolSpa', v)} />
-          <Toggle label="Reflecting Pond / Koi Pond" checked={data.reflectingPond} onChange={(v) => update('reflectingPond', v)} />
-          <Toggle label="Sport Court" description="Pickleball, basketball" checked={data.sportCourt} onChange={(v) => update('sportCourt', v)} />
-          <Toggle label="Play Lawn" checked={data.playLawn} onChange={(v) => update('playLawn', v)} />
-        </div>
-      </Field>
-
-      <Field label="Outdoor living">
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Toggle label="Outdoor Kitchen" checked={data.outdoorKitchen} onChange={(v) => update('outdoorKitchen', v)} />
-          <Toggle label="Fire Lounge" checked={data.fireLounge} onChange={(v) => update('fireLounge', v)} />
-        </div>
-      </Field>
-
-      <Field label="Food & garden">
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Toggle label="Citrus / Fruit Orchard" checked={data.orchard} onChange={(v) => update('orchard', v)} />
-          <Toggle label="Raised Bed Kitchen Garden" checked={data.raisedBeds} onChange={(v) => update('raisedBeds', v)} />
-          <Toggle label="Greenhouse" checked={data.greenhouse} onChange={(v) => update('greenhouse', v)} />
-        </div>
-      </Field>
-    </div>,
-
-    // Step 5
-    <div key="step5" className="space-y-8">
-      <div>
-        <h3 className="font-serif text-2xl text-[#1A1614] mb-1">Style & Budget</h3>
-        <p className="text-[#9B9189] text-sm">Set the aesthetic direction, investment level, and construction approach.</p>
-      </div>
-
-      <Field label="Aesthetic style">
-        <div className="grid sm:grid-cols-2 gap-2">
-          {AESTHETIC_OPTIONS.map((opt) => (
-            <OptionCard key={opt} label={opt} selected={data.aestheticStyle === opt} onClick={() => update('aestheticStyle', opt)} />
+      <Field label="Total budget range">
+        <div className="grid sm:grid-cols-3 gap-2">
+          {BUDGET_OPTIONS.map((opt) => (
+            <OptionCard key={opt} label={opt} selected={data.budgetRange === opt} onClick={() => update('budgetRange', opt)} />
           ))}
         </div>
       </Field>
 
-      <div className="grid sm:grid-cols-2 gap-6">
-        <Field label="Total budget range">
-          <div className="space-y-2">
-            {BUDGET_OPTIONS.map((opt) => (
-              <OptionCard key={opt} label={opt} selected={data.budgetRange === opt} onClick={() => update('budgetRange', opt)} />
-            ))}
-          </div>
-        </Field>
-        <div className="space-y-6">
-          <Field label="Build timeline">
-            <div className="space-y-2">
-              {TIMELINE_OPTIONS.map((opt) => (
-                <OptionCard key={opt} label={opt} selected={data.buildTimeline === opt} onClick={() => update('buildTimeline', opt)} />
-              ))}
-            </div>
-          </Field>
-          <Field label="SCIP interest level">
-            <div className="space-y-2">
-              {SCIP_OPTIONS.map((opt) => (
-                <OptionCard key={opt} label={opt} selected={data.scipInterest === opt} onClick={() => update('scipInterest', opt)} />
-              ))}
-            </div>
-          </Field>
+      <Field label="Must-have spaces (select all that apply)">
+        <div className="grid sm:grid-cols-2 gap-3">
+          <Toggle label="Pool & Spa" checked={data.poolSpa} onChange={(v) => update('poolSpa', v)} />
+          <Toggle label="Wellness Suite" description="Gym, sauna, cold plunge" checked={data.wellnessSuite} onChange={(v) => update('wellnessSuite', v)} />
+          <Toggle label="Chef's Kitchen + Scullery" checked={data.chefKitchen} onChange={(v) => update('chefKitchen', v)} />
+          <Toggle label="Homeschool Room" checked={data.homeschoolRoom} onChange={(v) => update('homeschoolRoom', v)} />
+          <Toggle label="Guest Suite / Casita" checked={data.guestSuite} onChange={(v) => update('guestSuite', v)} />
+          <Toggle label="Office / Studio" checked={data.officStudio} onChange={(v) => update('officStudio', v)} />
+          <Toggle label="Outdoor Kitchen" checked={data.outdoorKitchen} onChange={(v) => update('outdoorKitchen', v)} />
+          <Toggle label="Orchard / Kitchen Garden" checked={data.orchard} onChange={(v) => update('orchard', v)} />
         </div>
-      </div>
+      </Field>
     </div>,
   ]
 
@@ -395,11 +307,11 @@ export default function EstateForm({ onComplete, initialData }: EstateFormProps)
             Design your estate.
           </h2>
           <p className="mt-3 text-[#9B9189] max-w-lg">
-            Answer a few questions about your family, lifestyle, and vision. We'll generate your personalized estate blueprint.
+            Answer a few questions about your family, lifestyle, and vision. We'll match you with your perfect estate collection.
           </p>
         </div>
 
-        {/* Progress bar */}
+        {/* Progress */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
             {stepLabels.map((label, i) => (
@@ -413,14 +325,14 @@ export default function EstateForm({ onComplete, initialData }: EstateFormProps)
                 }`}>
                   {i < step ? <Check size={12} /> : i + 1}
                 </div>
-                <span className="text-[0.6rem] font-medium tracking-wide uppercase text-[#9B9189] hidden sm:block text-center max-w-14 leading-tight">{label}</span>
+                <span className="text-[0.6rem] font-medium tracking-wide uppercase text-[#9B9189] hidden sm:block text-center max-w-20 leading-tight">{label}</span>
               </div>
             ))}
           </div>
           <div className="h-1 bg-[#E8E0D5] rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-[#C9A84C] rounded-full"
-              animate={{ width: `${((step + 1) / 5) * 100}%` }}
+              animate={{ width: `${((step + 1) / 3) * 100}%` }}
               transition={{ duration: 0.4 }}
             />
           </div>
@@ -428,20 +340,19 @@ export default function EstateForm({ onComplete, initialData }: EstateFormProps)
 
         {/* Form card */}
         <div className="bg-white border border-[#E8E0D5] rounded-sm p-5 md:p-10">
-          {/* overflow-hidden scoped here so it clips the slide animation but not the card content */}
           <div className="overflow-hidden">
-          <AnimatePresence mode="wait" custom={dir}>
-            <motion.div
-              key={step}
-              custom={dir}
-              initial={{ x: dir > 0 ? 40 : -40, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: dir > 0 ? -40 : 40, opacity: 0 }}
-              transition={{ duration: 0.35 }}
-            >
-              {steps[step]}
-            </motion.div>
-          </AnimatePresence>
+            <AnimatePresence mode="wait" custom={dir}>
+              <motion.div
+                key={step}
+                custom={dir}
+                initial={{ x: dir > 0 ? 40 : -40, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: dir > 0 ? -40 : 40, opacity: 0 }}
+                transition={{ duration: 0.35 }}
+              >
+                {steps[step]}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Nav */}
@@ -456,7 +367,7 @@ export default function EstateForm({ onComplete, initialData }: EstateFormProps)
               Previous
             </button>
 
-            {step < 4 ? (
+            {step < 2 ? (
               <button
                 type="button"
                 onClick={next}

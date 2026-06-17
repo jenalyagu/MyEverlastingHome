@@ -6,7 +6,7 @@ import Hero from './components/Hero'
 import WhatItDoes from './components/WhatItDoes'
 import WhySCIP from './components/WhySCIP'
 import HowItWorks from './components/HowItWorks'
-import SamplePreview from './components/SamplePreview'
+
 import EstateForm from './components/EstateForm'
 import Footer from './components/Footer'
 import BlueprintPage from './pages/BlueprintPage'
@@ -57,8 +57,7 @@ export default function App() {
         <WhatItDoes />
         <WhySCIP />
         <HowItWorks />
-        <SamplePreview onViewSample={() => setSampleModalOpen(true)} />
-        <EstateForm onComplete={handleFormComplete} />
+<EstateForm onComplete={handleFormComplete} />
         <Footer />
       </div>
 
