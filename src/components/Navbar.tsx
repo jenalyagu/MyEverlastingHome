@@ -29,7 +29,7 @@ export default function Navbar({ onDesignEstate, onViewSample }: NavbarProps) {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16 lg:h-20">
           <button onClick={onDesignEstate} className="flex items-center gap-2">
-            <img src="/Logos/ehbg-logo.png" alt="My Everlasting Home" className="h-9 w-auto" />
+            <img src="/Logos/ehbg-logo.png" alt="My Everlasting Home" className="h-12 w-auto" />
           </button>
 
           <div className={`hidden md:flex items-center gap-8 text-sm font-medium tracking-wide transition-colors duration-500 ${scrolled ? 'text-[#5C4033]' : 'text-[#C4BDB5]'}`}>
