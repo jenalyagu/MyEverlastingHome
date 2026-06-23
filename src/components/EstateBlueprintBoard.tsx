@@ -259,7 +259,7 @@ export default function EstateBlueprintBoard({ data, devMode = false }: EstateBl
 
       {/* ── 6. FOOTER ── */}
       <footer className="eb-footer">
-        <div className="eb-footer-monogram">{data.footerMonogram}</div>
+        <img src="/Logos/ehbg-logo.png" alt="EHBG" className="eb-footer-monogram" />
         <div className="eb-footer-name">{data.estateName}</div>
         <div className="eb-footer-tagline">{data.footerTagline}</div>
         <div className="eb-footer-rule" />

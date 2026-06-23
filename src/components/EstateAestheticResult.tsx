@@ -83,8 +83,8 @@ const EstateAestheticResult = forwardRef<HTMLDivElement, Props>(function EstateA
         className="flex items-center justify-between pt-6 border-t border-[#E0D8CE]"
       >
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 border border-[#C9A84C]/50 flex items-center justify-center">
-            <span className="font-serif text-[#C9A84C] text-sm tracking-widest">{brief.footerMonogram}</span>
+          <div className="w-10 h-10 border border-[#C9A84C]/50 flex items-center justify-center p-1.5">
+            <img src="/Logos/ehbg-logo.png" alt="EHBG" className="w-full h-full object-contain" />
           </div>
           <div>
             <div className="font-serif text-[#1A1614] text-sm">{brief.estateName}</div>
