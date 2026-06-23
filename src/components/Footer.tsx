@@ -5,9 +5,7 @@ export default function Footer() {
         <div className="flex flex-col lg:flex-row justify-between gap-12">
           <div className="max-w-sm">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 bg-[#C9A84C] rounded-sm flex items-center justify-center">
-                <span className="text-[#1A1614] text-xs font-serif font-bold leading-none">M</span>
-              </div>
+              <img src="/Logos/ehbg-logo.png" alt="EHBG" className="h-7 w-auto object-contain" />
               <span className="font-serif text-[#F7F3EE] text-lg tracking-wide">My Everlasting Home</span>
             </div>
             <p className="text-[#9B9189] text-sm leading-relaxed">
