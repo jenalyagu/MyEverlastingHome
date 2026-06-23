@@ -11,89 +11,13 @@ interface Props {
   formData: EstateFormData
 }
 
-const FLOOR_LABELS = [
-  { key: 'mainFloorZones',     label: 'Main Floor' },
-  { key: 'upperFloorZones',    label: 'Upper Floor' },
-  { key: 'wellnessLevelZones', label: 'Wellness Level' },
-  { key: 'sitePlanZones',      label: 'Site Plan' },
-] as const
 
 const EstateAestheticResult = forwardRef<HTMLDivElement, Props>(function EstateAestheticResult({ match, brief, formData }, ref) {
   const [showModal, setShowModal] = useState(false)
   const isWide = match.orientation === 'wide'
 
-  const specItems = [
-    formData.squareFootage && { label: 'Square Footage', value: `${formData.squareFootage} sf` },
-    formData.bedrooms      && { label: 'Bedrooms',       value: formData.bedrooms },
-    formData.bathrooms     && { label: 'Bathrooms',      value: formData.bathrooms },
-    formData.garageSpaces  && { label: 'Garage',         value: `${formData.garageSpaces}-car` },
-    formData.landSize      && { label: 'Land',           value: formData.landSize },
-    formData.budgetRange   && { label: 'Budget',         value: formData.budgetRange },
-  ].filter(Boolean) as { label: string; value: string }[]
-
-  const featureFlags = [
-    formData.wellnessSuite  && 'Wellness Suite',
-    formData.chefKitchen    && "Chef's Kitchen",
-    formData.poolSpa        && 'Pool & Spa',
-    formData.officStudio    && "Founder's Studio",
-    formData.homeschoolRoom && 'Learning Atelier',
-    formData.guestSuite     && 'Guest Suite',
-    formData.outdoorKitchen && 'Outdoor Kitchen',
-    formData.fireLounge     && 'Fire Lounge',
-    formData.greenhouse     && 'Greenhouse',
-    formData.orchard        && 'Orchard',
-    formData.reflectingPond && 'Reflecting Pond',
-    formData.sportCourt     && 'Sport Court',
-    formData.raisedBeds     && 'Kitchen Gardens',
-    formData.playLawn       && 'Play Lawn',
-    formData.pantry         && 'Walk-In Pantry',
-    formData.laundryMudroom && 'Mudroom Hub',
-  ].filter(Boolean) as string[]
-
   return (
     <div ref={ref} className="max-w-7xl mx-auto px-4 lg:px-10 py-10 space-y-12">
-
-      {/* ── Collection badge ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex items-center gap-3"
-      >
-        <div className="h-px w-8 bg-[#C9A84C]" />
-        <span className="text-[#C9A84C] text-xs tracking-[0.25em] uppercase font-medium">
-          {match.collectionName} — {match.collectionTag}
-        </span>
-      </motion.div>
-
-      {/* ── Estate name + subtitle ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.05 }}
-      >
-        <h2 className="font-serif text-4xl md:text-6xl text-[#1A1614] leading-tight mb-3">
-          {brief.estateName}
-        </h2>
-        <p className="text-[#6B5D52] text-lg font-light italic">{brief.estateSubtitle}</p>
-      </motion.div>
-
-      {/* ── Spec strip ── */}
-      {specItems.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex flex-wrap gap-3"
-        >
-          {specItems.map(s => (
-            <div key={s.label} className="border border-[#E0D8CE] bg-white px-4 py-2 rounded-sm">
-              <div className="text-[#9B9189] text-[10px] tracking-widest uppercase">{s.label}</div>
-              <div className="text-[#1A1614] text-sm font-medium mt-0.5">{s.value}</div>
-            </div>
-          ))}
-        </motion.div>
-      )}
 
       {/* ── Matched aesthetic board ── */}
       <motion.div
@@ -128,75 +52,28 @@ const EstateAestheticResult = forwardRef<HTMLDivElement, Props>(function EstateA
         <p className="mt-3 text-[#9B9189] text-sm italic">{brief.editorialNote}</p>
       </motion.div>
 
-      {/* ── Floor plans + features ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.25 }}
-        className="grid md:grid-cols-2 gap-6"
-      >
-        {/* Floor zones */}
-        <div className="border border-[#E0D8CE] bg-white rounded-sm overflow-hidden">
-          <div className="px-5 py-3 border-b border-[#E0D8CE] bg-[#F7F3EE]">
-            <span className="text-[#5C4033] text-xs tracking-[0.2em] uppercase font-medium">Estate Program</span>
-          </div>
-          <div className="p-5 grid grid-cols-2 gap-5">
-            {FLOOR_LABELS.map(({ key, label }) => {
-              const zones = brief[key] as string[]
-              if (!zones?.length) return null
-              return (
-                <div key={key}>
-                  <div className="text-[#C9A84C] text-[10px] tracking-widest uppercase mb-2">{label}</div>
-                  <ul className="space-y-1">
-                    {zones.map(z => (
-                      <li key={z} className="text-[#3D2F27] text-xs flex items-start gap-1.5">
-                        <span className="text-[#C9A84C] mt-0.5 shrink-0">—</span>
-                        {z}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )
-            })}
-          </div>
+      {/* ── SCIP benefits ── */}
+      <div>
+        <div className="flex items-center gap-3 mb-5">
+          <div className="h-px w-8 bg-[#C9A84C]" />
+          <span className="text-[#C9A84C] text-xs font-medium tracking-[0.2em] uppercase">Built with SCIP</span>
         </div>
-
-        {/* Selected features + SCIP benefits */}
-        <div className="space-y-6">
-
-          {featureFlags.length > 0 && (
-            <div className="border border-[#E0D8CE] bg-white rounded-sm overflow-hidden">
-              <div className="px-5 py-3 border-b border-[#E0D8CE] bg-[#F7F3EE]">
-                <span className="text-[#5C4033] text-xs tracking-[0.2em] uppercase font-medium">Estate Features</span>
-              </div>
-              <div className="p-5 flex flex-wrap gap-2">
-                {featureFlags.map(f => (
-                  <span
-                    key={f}
-                    className="border border-[#C9A84C]/40 text-[#5C4033] text-[11px] px-3 py-1 rounded-sm bg-[#FBF8F2]"
-                  >
-                    {f}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="border border-[#E0D8CE] bg-white rounded-sm overflow-hidden">
-            <div className="px-5 py-3 border-b border-[#E0D8CE] bg-[#F7F3EE]">
-              <span className="text-[#5C4033] text-xs tracking-[0.2em] uppercase font-medium">Built with SCIP</span>
-            </div>
-            <div className="p-5 space-y-4">
-              {brief.scipBenefits.map(b => (
-                <div key={b.title}>
-                  <div className="text-[#1A1614] text-sm font-medium mb-0.5">{b.title}</div>
-                  <div className="text-[#6B5D52] text-xs leading-relaxed">{b.description}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {brief.scipBenefits.map((b, i) => (
+            <motion.div
+              key={b.title}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.25 + i * 0.05 }}
+              className="border border-[#E0D8CE] bg-white rounded-sm p-5"
+            >
+              <div className="text-[#C9A84C] text-lg mb-2">{b.icon}</div>
+              <div className="font-serif text-[#1A1614] text-sm mb-1">{b.title}</div>
+              <div className="text-[#6B5D52] text-xs leading-relaxed">{b.description}</div>
+            </motion.div>
+          ))}
         </div>
-      </motion.div>
+      </div>
 
       {/* ── Footer tagline ── */}
       <motion.div

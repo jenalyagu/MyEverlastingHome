@@ -28,7 +28,7 @@ export interface BoardBrief {
   lifestyleTiles: Array<{ label: string; prompt: string }>
 
   // SCIP
-  scipBenefits: Array<{ title: string; description: string }>
+  scipBenefits: Array<{ icon: string; title: string; description: string }>
 
   // Raw board data (for generation pipeline)
   boardData: EstateBlueprintData
@@ -62,7 +62,7 @@ export function buildBoardBrief(formData: EstateFormData, copyOverrides?: Estate
     interiorTiles: boardData.interiorLifestyleTiles.map(t => ({ label: t.label, prompt: t.prompt })),
     lifestyleTiles: boardData.estateLifestyleTiles.map(t => ({ label: t.label, prompt: t.prompt })),
 
-    scipBenefits: boardData.scipBenefits.map(b => ({ title: b.title, description: b.description })),
+    scipBenefits: boardData.scipBenefits.map(b => ({ icon: b.icon, title: b.title, description: b.description })),
 
     boardData,
     formData,

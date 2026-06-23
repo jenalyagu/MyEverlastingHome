@@ -5,7 +5,6 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import WhatItDoes from './components/WhatItDoes'
 import WhySCIP from './components/WhySCIP'
-import HowItWorks from './components/HowItWorks'
 
 import EstateForm from './components/EstateForm'
 import Footer from './components/Footer'
@@ -56,7 +55,6 @@ export default function App() {
         <Hero onDesignEstate={handleDesignEstate} onViewSample={() => setSampleModalOpen(true)} />
         <WhatItDoes />
         <WhySCIP />
-        <HowItWorks />
 <EstateForm onComplete={handleFormComplete} />
         <Footer />
       </div>

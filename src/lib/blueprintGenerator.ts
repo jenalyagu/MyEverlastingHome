@@ -60,26 +60,76 @@ export interface Blueprint {
 
 function pickEstateName(data: EstateFormData): { name: string; tagline: string } {
   const styles: Record<string, { name: string; tagline: string }> = {
-    'Modern Organic': {
-      name: 'The Verdant Estate',
-      tagline: 'Where organic form meets considered living',
-    },
-    'Traditional / Classic': {
-      name: 'The Ashwood Estate',
-      tagline: 'Timeless architecture, modern legacy',
-    },
-    'Mediterranean / Spanish': {
-      name: 'La Casa Dorada',
-      tagline: 'Sun-warmed walls, generations of story',
-    },
-    'Farmhouse / Agrarian': {
-      name: 'The Harvest House',
-      tagline: 'Rooted in land, built for family',
-    },
-    'Minimalist / Contemporary': {
-      name: 'The Limen Residence',
-      tagline: 'Precision living, quietly monumental',
-    },
+    // ── Cottage Series ────────────────────────────────────────────────────────
+    'Banyan 1600':           { name: 'The Banyan Cottage',          tagline: 'Warmth and welcome, rooted from the first day' },
+    'Canyon 1500':           { name: 'The Canyon House',            tagline: 'Desert character, built to last a century' },
+    'Cedar 1800':            { name: 'The Cedar House',             tagline: 'Pacific warmth, honest materials, home from day one' },
+    'Coastal 1600':          { name: 'The Coastal Cottage',         tagline: 'Salt air and permanence, a home that holds' },
+    'Hearth 1800':           { name: 'The Hearth House',            tagline: 'Every season, every generation — gathered here' },
+    'Magnolia 1800 Cottage': { name: 'The Magnolia Cottage',        tagline: 'Southern grace, built to endure' },
+    'Oakmont 1800 Cottage':  { name: 'The Oakmont',                 tagline: 'Classic proportions, quiet permanence' },
+    'Prairie 1600':          { name: 'The Prairie House',           tagline: 'Open land, honest craft, a home on solid ground' },
+    'Summit 1800':           { name: 'The Summit Cottage',          tagline: 'Built for the mountain — season after season' },
+    'Velocity 1500':         { name: 'The Velocity House',          tagline: 'Precision design, stripped to what matters' },
+
+    // ── Signature Series ──────────────────────────────────────────────────────
+    'Aspen 2800':            { name: 'The Aspen Residence',         tagline: 'Mountain modern, where the family comes alive' },
+    'Banyan 2600':           { name: 'The Banyan Residence',        tagline: 'Deep roots, wide verandas, room for everyone' },
+    'California 2000':       { name: 'The California House',        tagline: 'Indoor and out, effortlessly one' },
+    'Canyon 2100':           { name: 'The Canyon Residence',        tagline: 'Rammed earth and sky — a home of the land' },
+    'Coastal 2000':          { name: 'The Coastal Residence',       tagline: 'Salt air, clean lines, built to weather everything' },
+    'Harbor 1900':           { name: 'The Harbor House',            tagline: 'Shingle and stone, a home earned by the water' },
+    'Heritage 2300':         { name: 'The Heritage House',          tagline: 'American proportions, a legacy you can touch' },
+    'Lone Star 2100':        { name: 'The Lone Star',               tagline: 'Wide porches, open land, built Texas-strong' },
+    'Magnolia 2200':         { name: 'The Magnolia House',          tagline: 'Southern grace refined, for the family growing into itself' },
+    'Magnolia 2400':         { name: 'The Magnolia Residence',      tagline: 'Shaded porches and a garden — time lived slowly' },
+    'Mesa 1800':             { name: 'The Mesa House',              tagline: 'Adobe warmth, Southwest soul, built for the sun' },
+    'Oakmont 2600':          { name: 'The Oakmont Residence',       tagline: 'Oak millwork and timeless form — a home that ages well' },
+    'Prairie 2000':          { name: 'The Prairie Residence',       tagline: 'Horizontal lines, open land, a family in full stride' },
+    'Summit 2200':           { name: 'The Summit Residence',        tagline: 'Dark timber and stone, built for the peaks' },
+    'Velocity 2400':         { name: 'The Velocity Residence',      tagline: 'High-performance living, precision at every scale' },
+
+    // ── Executive Series ──────────────────────────────────────────────────────
+    'Aegean Estate':         { name: 'The Aegean Estate',           tagline: 'Whitewashed stone and sea light — a home outside time' },
+    'Alpine Estate':         { name: 'The Alpine Estate',           tagline: 'Timber, stone, and altitude — built for the long seasons' },
+    'Backyard Track House':  { name: 'The Track House',             tagline: 'Engineered for those who live at full speed' },
+    'Car Vault':             { name: 'The Vault Estate',            tagline: 'Where the collection lives, and so does the family' },
+    'Creator Estate':        { name: 'The Creator Estate',          tagline: 'Built for the work that defines you' },
+    'Fjord 3800':            { name: 'The Fjord Estate',            tagline: 'Dark timber, still water, the drama of the north' },
+    'French Provence':       { name: 'The Provençal Estate',        tagline: 'Limestone and lavender, a life lived without hurry' },
+    'The Lotus':             { name: 'The Lotus Estate',            tagline: 'Vastu-aligned, in harmony with the land and sky' },
+    'Mediterranean Estate':  { name: 'The Mediterranean Estate',    tagline: 'Sun-warmed walls, iron gates, generations of story' },
+    'Moroccan Riad':         { name: 'The Riad Estate',             tagline: 'Courtyard, tile, and silence — the art of the threshold' },
+    'Nordic Estate':         { name: 'The Nordic Estate',           tagline: 'White timber and long winters — a home that holds the light' },
+    'Stealth Wealth':        { name: 'The Steward Estate',          tagline: 'Restraint as a statement — quality that speaks quietly' },
+    'Stillwater 3600':       { name: 'The Stillwater Estate',       tagline: 'Calm at the water\'s edge, built to last lifetimes' },
+    'The Banyan':            { name: 'The Banyan Estate',           tagline: 'Roots deep enough for everyone who calls this home' },
+    'The Hearth':            { name: 'The Hearth Estate',           tagline: 'The fire at the center — a home built around living' },
+    'Hill Country':          { name: 'The Hill Country Estate',     tagline: 'Limestone and cedar on Texas land, built to endure' },
+    'The Patriot':           { name: 'The Patriot Estate',          tagline: 'Brick, millwork, and heritage — an American legacy' },
+    'Tropical Modern':       { name: 'The Tropical Estate',         tagline: 'Teak and coral stone, open to the sky' },
+    'Villa 4200':            { name: 'Villa Dorata',                tagline: 'Italian proportion, estate scale, a life fully lived' },
+    'Wabi-Sabi':             { name: 'The Wabi Estate',             tagline: 'Aged timber and rammed earth — beauty in impermanence' },
+    'Cars & Coffee':         { name: 'The Cars & Coffee Estate',    tagline: 'The weekend ritual, elevated to a way of life' },
+
+    // ── Legacy Series ─────────────────────────────────────────────────────────
+    "Collector's Compound":  { name: "The Collector's Compound",    tagline: 'The collection, the family, and the compound — all of it' },
+    'The Crooner':           { name: 'The Crooner\'s Estate',       tagline: 'Grand rooms, great music, a house built for gathering' },
+    'Dynasty Studio':        { name: 'The Dynasty Estate',          tagline: 'Dark timber, deep intention — built to be handed down' },
+    'Executive Motor Court': { name: 'The Motor Court Estate',      tagline: 'The arrival says everything — quiet, powerful, precise' },
+    'Future-Proof':          { name: 'The Fortified Estate',        tagline: 'Resilient by design, ready for whatever comes' },
+    'Little Drivers':        { name: 'The Little Drivers\' Estate', tagline: 'Where the next generation learns what matters' },
+    'Maharaja Estate':       { name: 'The Maharaja Estate',         tagline: 'Marble inlay and carved stone — a palace for the ages' },
+    'The Overland':          { name: 'The Overland Estate',         tagline: 'Stone, steel, and self-reliance — the adventure homestead' },
+    'Stealth Wealth II':     { name: 'The Steward Legacy',          tagline: 'Estate scale, zero noise — mastery in every detail' },
+    'Bahay Legacy':          { name: 'The Bahay Legacy Estate',     tagline: 'Filipino warmth at full estate scale — every generation welcome' },
+    'The Banyan Estate':     { name: 'The Banyan Legacy',           tagline: 'A compound grown for family — every branch has a home' },
+    'Desert Oasis':          { name: 'The Oasis Estate',            tagline: 'Thermal mass and desert sky — fortress and sanctuary at once' },
+    'The Homestead':         { name: 'The Homestead Estate',        tagline: 'Working land, rooted living, a legacy you can harvest' },
+    'The Homestead II':      { name: 'The Homestead Compound',      tagline: 'The full agrarian vision — barn, orchard, and family under one sky' },
+    'The Regency':           { name: 'The Regency Estate',          tagline: 'European grandeur, formal gardens, built for the centuries' },
+    'The Sanctuary':         { name: 'The Sanctuary Estate',        tagline: 'Spa, cold plunge, garden — rest engineered into the walls' },
+    'The Sporting Estate':   { name: 'The Sporting Estate',         tagline: 'Courts, trails, and open sky — the active family at full scale' },
   }
   return styles[data.aestheticStyle] ?? { name: 'My Everlasting Home', tagline: 'A legacy built to last' }
 }

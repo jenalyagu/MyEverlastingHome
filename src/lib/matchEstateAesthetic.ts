@@ -8,53 +8,91 @@ export interface AestheticMatch {
 }
 
 const LIBRARY: Record<string, AestheticMatch> = {
-  modernResidence:       { imagePath: '/MockResModern.png',                                  collectionName: 'The Modern Residence',       collectionTag: 'Modern Family Collection',            orientation: 'wide' },
-  zen:                   { imagePath: '/EstateAesthetics/TheZenWide.PNG',                    collectionName: 'The Zen Sanctuary',           collectionTag: 'Japanese Zen Collection',             orientation: 'wide' },
-  wabiSabi:              { imagePath: '/EstateAesthetics/WabiSabiVertical.png',              collectionName: 'The Wabi Estate',             collectionTag: 'Wabi-Sabi Collection',                orientation: 'vertical' },
-  sanctuary:             { imagePath: '/EstateAesthetics/TheSanctuaryVertical.PNG',          collectionName: 'The Sanctuary Estate',        collectionTag: 'Wellness Legacy Collection',          orientation: 'vertical' },
-  sanctuary2:            { imagePath: '/EstateAesthetics/TheSanctuaryVertical2.PNG',         collectionName: 'The Sanctuary Estate',        collectionTag: 'Wellness Legacy Collection',          orientation: 'vertical' },
-  desertOasis:           { imagePath: '/EstateAesthetics/TheDesertOasisVertical.PNG',        collectionName: 'The Oasis Estate',            collectionTag: 'Desert Collection',                   orientation: 'vertical' },
-  oceanLegacy:           { imagePath: '/EstateAesthetics/TheOceanLegacyWide.PNG',            collectionName: 'The Ocean Legacy Estate',     collectionTag: 'Coastal Collection',                  orientation: 'wide' },
-  aegean:                { imagePath: '/EstateAesthetics/AegeanVertical.png',                collectionName: 'The Aegean House',            collectionTag: 'Greek Islands Collection',            orientation: 'vertical' },
-  mediterranean:         { imagePath: '/EstateAesthetics/MediterraneanVertical.png',         collectionName: 'The Mediterranean Estate',    collectionTag: 'Mediterranean Collection',            orientation: 'vertical' },
-  moroccan:              { imagePath: '/EstateAesthetics/MoroccanEstateVertical.png',        collectionName: 'The Riad Estate',             collectionTag: 'Moroccan Collection',                 orientation: 'vertical' },
-  banyan:                { imagePath: '/EstateAesthetics/TheBanyanEstateWide.PNG',           collectionName: 'The Banyan Estate',           collectionTag: 'Multigenerational Collection',        orientation: 'wide' },
-  bahay:                 { imagePath: '/EstateAesthetics/TheBahayLegacyWide.PNG',            collectionName: 'The Bahay Legacy',            collectionTag: 'Filipino Collection',                 orientation: 'wide' },
-  tropicalModern:        { imagePath: '/EstateAesthetics/TropicalModernVertical.png',        collectionName: 'The Tropical Estate',         collectionTag: 'Tropical Modern Collection',          orientation: 'vertical' },
-  sporting:              { imagePath: '/EstateAesthetics/TheSportingEstateWide.PNG',         collectionName: 'The Sporting Estate',         collectionTag: 'Outdoor Collection',                  orientation: 'wide' },
-  regency:               { imagePath: '/EstateAesthetics/TheRegencyEstateVertical.PNG',      collectionName: 'The Regency Estate',          collectionTag: 'European Manor Collection',           orientation: 'vertical' },
-  patriot:               { imagePath: '/EstateAesthetics/ThePatriotEstateVertical.PNG',      collectionName: 'The Patriot Estate',          collectionTag: 'American Legacy Collection',          orientation: 'vertical' },
-  lotus:                 { imagePath: '/EstateAesthetics/LotusVertical.png',                 collectionName: 'The Lotus Estate',            collectionTag: 'Vastu Collection',                    orientation: 'vertical' },
-  homestead:             { imagePath: '/EstateAesthetics/TheHomesteadVertical.PNG',          collectionName: 'The Homestead Estate',        collectionTag: 'Self-Reliance Collection',            orientation: 'vertical' },
-  hearth:                { imagePath: '/EstateAesthetics/TheHearthVertical.PNG',             collectionName: 'The Hearth',                  collectionTag: 'Family Legacy Collection',            orientation: 'vertical' },
-  hillCountry:           { imagePath: '/EstateAesthetics/TheHillCountryTXVertical.PNG',      collectionName: 'The Hill Country',            collectionTag: 'Texas Collection',                    orientation: 'vertical' },
-  frenchProvence:        { imagePath: '/EstateAesthetics/FrenchProvenceVertical.png',        collectionName: 'The Provence Estate',         collectionTag: 'French Countryside Collection',       orientation: 'vertical' },
-  alpine:                { imagePath: '/EstateAesthetics/AlpineVertical.png',                collectionName: 'The Alpine Estate',           collectionTag: 'Alpine Collection',                   orientation: 'vertical' },
-  nordic:                { imagePath: '/EstateAesthetics/NordicVertical.png',                collectionName: 'The Nordic Estate',           collectionTag: 'Scandinavian Slow Living Collection', orientation: 'vertical' },
-  stealthWealth:         { imagePath: '/EstateAesthetics/StealthWealthVertical.png',         collectionName: 'The Steward Estate',          collectionTag: 'Stealth Wealth Collection',           orientation: 'vertical' },
-  creator:               { imagePath: '/EstateAesthetics/CreatorEstateVertical.png',         collectionName: 'The Creator Estate',          collectionTag: 'Creative Family Collection',          orientation: 'vertical' },
-  crooner:               { imagePath: '/EstateAesthetics/CroonerVertical.png',               collectionName: "The Crooner's Residence",     collectionTag: 'American Songbook Collection',        orientation: 'vertical' },
-  dynasty:               { imagePath: '/EstateAesthetics/DynastyStudioVertical.png',         collectionName: 'The Dynasty Studio Home',     collectionTag: 'Legacy Builder Collection',           orientation: 'vertical' },
-  futureProof:           { imagePath: '/EstateAesthetics/FutureProofVertical.png',           collectionName: 'The Future-Proof Home',       collectionTag: 'Resilience Collection',               orientation: 'vertical' },
-  celestial:             { imagePath: '/EstateAesthetics/TheCelestialEstateVertical.PNG',    collectionName: 'The Celestial Estate',        collectionTag: 'Cosmic Collection',                   orientation: 'vertical' },
-  dragon:                { imagePath: '/EstateAesthetics/TheDragonEstateWide.PNG',           collectionName: 'The Dragon Estate',           collectionTag: 'Feng Shui Collection',                orientation: 'wide' },
-  maharaja:              { imagePath: '/EstateAesthetics/MaharajaEstateWide.PNG',            collectionName: 'The Maharaja Estate',         collectionTag: 'Royal Fortress Collection',           orientation: 'wide' },
-  carVault:              { imagePath: '/EstateAesthetics/CarVaultVertical.png',              collectionName: 'The Car Vault Residence',     collectionTag: 'Automotive Collection',               orientation: 'vertical' },
-  collectorsCompound:    { imagePath: '/EstateAesthetics/CollectorsCompoundVertical.png',    collectionName: "The Collector's Compound",    collectionTag: 'Fortified Legacy Collection',         orientation: 'vertical' },
-  executiveMotorCourt:   { imagePath: '/EstateAesthetics/ExecutiveMotorCourtVertical.png',   collectionName: 'The Executive Motor Court',   collectionTag: 'Discrete Luxury Collection',          orientation: 'vertical' },
-  overland:              { imagePath: '/EstateAesthetics/OverlandVertical.png',              collectionName: 'The Overland Homestead',      collectionTag: 'Adventure Collection',                orientation: 'vertical' },
-  backyardTrack:         { imagePath: '/EstateAesthetics/BackyardTrackHouseVertical.png',    collectionName: 'The Backyard Track House',     collectionTag: 'Performance Collection',              orientation: 'vertical' },
-  lilDrivers:            { imagePath: '/EstateAesthetics/LilDriversVertical.png',            collectionName: "The Little Drivers' House",   collectionTag: 'Next Generation Collection',          orientation: 'vertical' },
-  weekendCoffee:         { imagePath: '/EstateAesthetics/WeekendCoffeeCarsVertical.png',     collectionName: 'The Weekend Cars & Coffee House', collectionTag: 'Enthusiast Collection',           orientation: 'vertical' },
+  // ── Cottage Tier ──────────────────────────────────────────────────────────
+  banyan1600:          { imagePath: '/EstateAesthetics/CottageTier/Banyan1600.png',                          collectionName: 'Banyan 1600',                     collectionTag: 'Cottage Series · Banyan Collection',              orientation: 'wide' },
+  canyon1500:          { imagePath: '/EstateAesthetics/CottageTier/Canyon1500.png',                          collectionName: 'Canyon 1500',                     collectionTag: 'Cottage Series · Canyon Collection',              orientation: 'wide' },
+  cedar1800:           { imagePath: '/EstateAesthetics/CottageTier/Cedar1800.png',                           collectionName: 'Cedar 1800',                      collectionTag: 'Cottage Series · Cedar Collection',               orientation: 'wide' },
+  coastal1600:         { imagePath: '/EstateAesthetics/CottageTier/Coastal1600.png',                         collectionName: 'Coastal 1600',                    collectionTag: 'Cottage Series · Coastal Collection',             orientation: 'wide' },
+  hearth1800:          { imagePath: '/EstateAesthetics/CottageTier/Hearth1800.png',                          collectionName: 'Hearth 1800',                     collectionTag: 'Cottage Series · Hearth Collection',              orientation: 'wide' },
+  magnolia1800Cottage: { imagePath: '/EstateAesthetics/CottageTier/Magnolia1800.png',                        collectionName: 'Magnolia 1800',                   collectionTag: 'Cottage Series · Magnolia Collection',            orientation: 'wide' },
+  oakmont1800Cottage:  { imagePath: '/EstateAesthetics/CottageTier/Oakmont1800.png',                         collectionName: 'Oakmont 1800',                    collectionTag: 'Cottage Series · Oakmont Collection',             orientation: 'wide' },
+  prairie1600:         { imagePath: '/EstateAesthetics/CottageTier/Prairie1600.png',                         collectionName: 'Prairie 1600',                    collectionTag: 'Cottage Series · Prairie Collection',             orientation: 'wide' },
+  summit1800:          { imagePath: '/EstateAesthetics/CottageTier/Summit1800.png',                          collectionName: 'Summit 1800',                     collectionTag: 'Cottage Series · Summit Collection',              orientation: 'wide' },
+  velocity1500:        { imagePath: '/EstateAesthetics/CottageTier/Velocity1500.png',                        collectionName: 'Velocity 1500',                   collectionTag: 'Cottage Series · Velocity Collection',            orientation: 'wide' },
+
+  // ── Signature Tier ────────────────────────────────────────────────────────
+  aspen2800:           { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Aspen2800.png',               collectionName: 'Aspen 2800',                      collectionTag: 'Signature Series · Aspen Collection',             orientation: 'wide' },
+  banyan2600:          { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Banyan2600.png',              collectionName: 'Banyan 2600',                     collectionTag: 'Signature Series · Banyan Collection',            orientation: 'wide' },
+  california2000:      { imagePath: '/EstateAesthetics/Signature:ResidenceTier/California2000.png',          collectionName: 'California 2000',                 collectionTag: 'Signature Series · California Collection',        orientation: 'wide' },
+  canyon2100:          { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Canyon2100.png',              collectionName: 'Canyon 2100',                     collectionTag: 'Signature Series · Canyon Collection',            orientation: 'wide' },
+  coastal2000:         { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Coastal2000.png',             collectionName: 'Coastal 2000',                    collectionTag: 'Signature Series · Coastal Collection',           orientation: 'wide' },
+  harbor1900:          { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Harbor1900.png',              collectionName: 'Harbor 1900',                     collectionTag: 'Signature Series · Harbor Collection',            orientation: 'wide' },
+  heritage2300:        { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Heritage2300.png',            collectionName: 'Heritage 2300',                   collectionTag: 'Signature Series · Heritage Collection',          orientation: 'wide' },
+  loneStar2100:        { imagePath: '/EstateAesthetics/Signature:ResidenceTier/LoneStar2100.png',            collectionName: 'Lone Star 2100',                  collectionTag: 'Signature Series · Lone Star Collection',         orientation: 'wide' },
+  magnolia2200:        { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Magnolia2200.png',            collectionName: 'Magnolia 2200',                   collectionTag: 'Signature Series · Magnolia Collection',          orientation: 'wide' },
+  magnolia2400:        { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Magnolia2400.png',            collectionName: 'Magnolia 2400',                   collectionTag: 'Signature Series · Magnolia Collection',          orientation: 'wide' },
+  mesa1800:            { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Mesa1800.png',                collectionName: 'Mesa 1800',                       collectionTag: 'Signature Series · Mesa Collection',              orientation: 'wide' },
+  oakmont2600:         { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Oakmont2600.png',             collectionName: 'Oakmont 2600',                    collectionTag: 'Signature Series · Oakmont Collection',           orientation: 'wide' },
+  prairie2000:         { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Prairie2000.png',             collectionName: 'Prairie 2000',                    collectionTag: 'Signature Series · Prairie Collection',           orientation: 'wide' },
+  summit2200:          { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Summit2200.png',              collectionName: 'Summit 2200',                     collectionTag: 'Signature Series · Summit Collection',            orientation: 'wide' },
+  velocity2400:        { imagePath: '/EstateAesthetics/Signature:ResidenceTier/Velocity2400.png',            collectionName: 'Velocity 2400',                   collectionTag: 'Signature Series · Velocity Collection',          orientation: 'wide' },
+
+  // ── Executive Tier ────────────────────────────────────────────────────────
+  aegean:              { imagePath: '/EstateAesthetics/ExecutiveTier/AegeanVertical.png',                    collectionName: 'The Aegean House',                collectionTag: 'Executive Series · Greek Islands Collection',     orientation: 'vertical' },
+  alpine:              { imagePath: '/EstateAesthetics/ExecutiveTier/AlpineVertical.png',                    collectionName: 'The Alpine Estate',               collectionTag: 'Executive Series · Alpine Collection',            orientation: 'vertical' },
+  backyardTrack:       { imagePath: '/EstateAesthetics/ExecutiveTier/BackyardTrackHouseVertical.png',        collectionName: 'The Backyard Track House',         collectionTag: 'Executive Series · Performance Collection',       orientation: 'vertical' },
+  carVault:            { imagePath: '/EstateAesthetics/ExecutiveTier/CarVaultVertical.png',                  collectionName: 'The Car Vault',                   collectionTag: 'Executive Series · Automotive Collection',        orientation: 'vertical' },
+  creator:             { imagePath: '/EstateAesthetics/ExecutiveTier/CreatorEstateVertical.png',             collectionName: 'The Creator Estate',              collectionTag: 'Executive Series · Creative Collection',          orientation: 'vertical' },
+  fjord3800:           { imagePath: '/EstateAesthetics/ExecutiveTier/Fjord3800.png',                         collectionName: 'Fjord 3800',                      collectionTag: 'Executive Series · Fjord Collection',             orientation: 'wide' },
+  frenchProvence:      { imagePath: '/EstateAesthetics/ExecutiveTier/FrenchProvenceVertical.png',            collectionName: 'The Provence Estate',             collectionTag: 'Executive Series · French Collection',            orientation: 'vertical' },
+  lotus:               { imagePath: '/EstateAesthetics/ExecutiveTier/LotusVertical.png',                     collectionName: 'The Lotus Estate',                collectionTag: 'Executive Series · Vastu Collection',             orientation: 'vertical' },
+  mediterranean:       { imagePath: '/EstateAesthetics/ExecutiveTier/MediterraneanVertical.png',             collectionName: 'The Mediterranean Estate',        collectionTag: 'Executive Series · Mediterranean Collection',     orientation: 'vertical' },
+  moroccan:            { imagePath: '/EstateAesthetics/ExecutiveTier/MoroccanEstateVertical.png',            collectionName: 'The Riad Estate',                 collectionTag: 'Executive Series · Moroccan Collection',          orientation: 'vertical' },
+  nordic:              { imagePath: '/EstateAesthetics/ExecutiveTier/NordicVertical.png',                    collectionName: 'The Nordic Estate',               collectionTag: 'Executive Series · Scandinavian Collection',      orientation: 'vertical' },
+  stealthWealth:       { imagePath: '/EstateAesthetics/ExecutiveTier/StealthWealthVertical.png',             collectionName: 'The Steward Estate',              collectionTag: 'Executive Series · Stealth Wealth Collection',    orientation: 'vertical' },
+  stillwater3600:      { imagePath: '/EstateAesthetics/ExecutiveTier/Stillwater3600.png',                    collectionName: 'Stillwater 3600',                 collectionTag: 'Executive Series · Stillwater Collection',        orientation: 'wide' },
+  banyanExecutive:     { imagePath: '/EstateAesthetics/ExecutiveTier/TheBanyanVertical2.PNG',                collectionName: 'The Banyan Estate',               collectionTag: 'Executive Series · Multigenerational Collection', orientation: 'vertical' },
+  hearth:              { imagePath: '/EstateAesthetics/ExecutiveTier/TheHearthVertical.PNG',                 collectionName: 'The Hearth',                      collectionTag: 'Executive Series · Family Legacy Collection',     orientation: 'vertical' },
+  hillCountry:         { imagePath: '/EstateAesthetics/ExecutiveTier/TheHillCountryTXVertical.PNG',          collectionName: 'The Hill Country',                collectionTag: 'Executive Series · Texas Collection',             orientation: 'vertical' },
+  patriot:             { imagePath: '/EstateAesthetics/ExecutiveTier/ThePatriotEstateVertical.PNG',          collectionName: 'The Patriot Estate',              collectionTag: 'Executive Series · American Legacy Collection',   orientation: 'vertical' },
+  tropicalModern:      { imagePath: '/EstateAesthetics/ExecutiveTier/TropicalModernVertical.png',            collectionName: 'The Tropical Estate',             collectionTag: 'Executive Series · Tropical Collection',          orientation: 'vertical' },
+  villa4200:           { imagePath: '/EstateAesthetics/ExecutiveTier/Villa4200.png',                         collectionName: 'Villa 4200',                      collectionTag: 'Executive Series · Villa Collection',             orientation: 'wide' },
+  wabiSabi:            { imagePath: '/EstateAesthetics/ExecutiveTier/WabiSabiVertical.png',                  collectionName: 'The Wabi Estate',                 collectionTag: 'Executive Series · Wabi-Sabi Collection',         orientation: 'vertical' },
+  weekendCoffee:       { imagePath: '/EstateAesthetics/ExecutiveTier/WeekendCoffeeCarsVertical.png',         collectionName: 'The Weekend Cars & Coffee House', collectionTag: 'Executive Series · Enthusiast Collection',        orientation: 'vertical' },
+
+  // ── Legacy Tier ───────────────────────────────────────────────────────────
+  collectorsCompound:  { imagePath: '/EstateAesthetics/LegacyTier/CollectorsCompoundVertical.png',           collectionName: "The Collector's Compound",         collectionTag: 'Legacy Series · Fortified Collection',           orientation: 'vertical' },
+  crooner:             { imagePath: '/EstateAesthetics/LegacyTier/CroonerVertical.png',                      collectionName: "The Crooner's Residence",          collectionTag: 'Legacy Series · American Songbook Collection',   orientation: 'vertical' },
+  dynasty:             { imagePath: '/EstateAesthetics/LegacyTier/DynastyStudioVertical.png',                collectionName: 'The Dynasty Studio Home',          collectionTag: 'Legacy Series · Legacy Builder Collection',      orientation: 'vertical' },
+  executiveMotorCourt: { imagePath: '/EstateAesthetics/LegacyTier/ExecutiveMotorCourtVertical.png',          collectionName: 'The Executive Motor Court',        collectionTag: 'Legacy Series · Discrete Luxury Collection',     orientation: 'vertical' },
+  futureProof:         { imagePath: '/EstateAesthetics/LegacyTier/FutureProofVertical.png',                  collectionName: 'The Future-Proof Home',            collectionTag: 'Legacy Series · Resilience Collection',          orientation: 'vertical' },
+  lilDrivers:          { imagePath: '/EstateAesthetics/LegacyTier/LilDriversVertical.png',                   collectionName: "The Little Drivers' House",        collectionTag: 'Legacy Series · Next Generation Collection',     orientation: 'vertical' },
+  maharaja:            { imagePath: '/EstateAesthetics/LegacyTier/MaharajaEstateWide.PNG',                   collectionName: 'The Maharaja Estate',              collectionTag: 'Legacy Series · Royal Fortress Collection',      orientation: 'wide' },
+  overland:            { imagePath: '/EstateAesthetics/LegacyTier/OverlandVertical.png',                     collectionName: 'The Overland Homestead',           collectionTag: 'Legacy Series · Adventure Collection',           orientation: 'vertical' },
+  stealthWealth2:      { imagePath: '/EstateAesthetics/LegacyTier/StealthWealthVertical2.png',               collectionName: 'The Steward Estate II',            collectionTag: 'Legacy Series · Quiet Luxury Collection',        orientation: 'vertical' },
+  bahay:               { imagePath: '/EstateAesthetics/LegacyTier/TheBahayLegacyWide.PNG',                  collectionName: 'The Bahay Legacy',                 collectionTag: 'Legacy Series · Filipino Collection',            orientation: 'wide' },
+  banyan:              { imagePath: '/EstateAesthetics/LegacyTier/TheBanyanEstateWide.PNG',                  collectionName: 'The Banyan Estate',                collectionTag: 'Legacy Series · Multigenerational Collection',   orientation: 'wide' },
+  desertOasis:         { imagePath: '/EstateAesthetics/LegacyTier/TheDesertOasisVertical.PNG',               collectionName: 'The Oasis Estate',                 collectionTag: 'Legacy Series · Desert Collection',              orientation: 'vertical' },
+  homestead:           { imagePath: '/EstateAesthetics/LegacyTier/TheHomesteadVertical.PNG',                 collectionName: 'The Homestead Estate',             collectionTag: 'Legacy Series · Self-Reliance Collection',       orientation: 'vertical' },
+  homestead2:          { imagePath: '/EstateAesthetics/LegacyTier/TheHomesteadVertical2.PNG',                collectionName: 'The Homestead Estate II',          collectionTag: 'Legacy Series · Agrarian Collection',            orientation: 'vertical' },
+  regency:             { imagePath: '/EstateAesthetics/LegacyTier/TheRegencyEstateVertical.PNG',             collectionName: 'The Regency Estate',               collectionTag: 'Legacy Series · European Manor Collection',      orientation: 'vertical' },
+  sanctuary:           { imagePath: '/EstateAesthetics/LegacyTier/TheSanctuaryVertical.PNG',                 collectionName: 'The Sanctuary Estate',             collectionTag: 'Legacy Series · Wellness Collection',            orientation: 'vertical' },
+  sportingEstate:      { imagePath: '/EstateAesthetics/LegacyTier/TheSportingEstateVertical2.PNG',           collectionName: 'The Sporting Estate',              collectionTag: 'Legacy Series · Outdoor Collection',             orientation: 'vertical' },
+
+  // ── Root-level fallbacks ──────────────────────────────────────────────────
+  modernResidence:     { imagePath: '/MockResModern.png',                                                     collectionName: 'The Modern Residence',             collectionTag: 'Modern Family Collection',                       orientation: 'wide' },
+  zen:                 { imagePath: '/EstateAesthetics/TheZenWide.PNG',                                       collectionName: 'The Zen Sanctuary',                collectionTag: 'Japanese Zen Collection',                        orientation: 'wide' },
+  oceanLegacy:         { imagePath: '/EstateAesthetics/TheOceanLegacyWide.PNG',                               collectionName: 'The Ocean Legacy Estate',          collectionTag: 'Coastal Collection',                             orientation: 'wide' },
+  dragon:              { imagePath: '/EstateAesthetics/TheDragonEstateWide.PNG',                              collectionName: 'The Dragon Estate',                collectionTag: 'Feng Shui Collection',                           orientation: 'wide' },
 }
 
 export function matchEstateAesthetic(data: EstateFormData): AestheticMatch {
-  const style     = data.aestheticStyle || ''
-  const climate   = data.climate || ''
-  const views     = data.views || ''
-  const terrain   = data.terrain || ''
+  const style    = data.aestheticStyle || ''
+  const climate  = data.climate || ''
+  const views    = data.views || ''
+  const terrain  = data.terrain || ''
   const priorities = Array.isArray(data.lifestylePriorities) ? data.lifestylePriorities : []
-  const multi     = !!data.multigenerational
+  const multi    = !!data.multigenerational
 
   const hasWellness     = priorities.includes('Wellness')
   const hasSport        = priorities.includes('Cars & motorcycles')
@@ -66,86 +104,101 @@ export function matchEstateAesthetic(data: EstateFormData): AestheticMatch {
   const hasResilience   = priorities.includes('Resilience & Preparedness')
   const hasLuxury       = priorities.includes('Luxury')
 
-  // ── 1. Explicit aesthetic style selection — highest fidelity signal ─────────
+  // ── 1. Explicit plan selection ───────────────────────────────────────────
   switch (style) {
-    case 'Wabi-Sabi / Japanese':      return LIBRARY.wabiSabi
-    case 'Alpine / Mountain':         return LIBRARY.alpine
-    case 'Scandinavian / Nordic':     return LIBRARY.nordic
-    case 'French Countryside':        return LIBRARY.frenchProvence
-    case 'Moroccan / Riad':           return LIBRARY.moroccan
-    case 'Greek / Aegean':            return LIBRARY.aegean
-    case 'Tropical Modern':           return LIBRARY.tropicalModern
-    case 'Vastu / Indian':            return LIBRARY.lotus
-    case 'Maharaja / South Asian':    return LIBRARY.maharaja
-    case 'Feng Shui / Chinese':       return LIBRARY.dragon
-    case 'Filipino / Bahay Legacy':   return LIBRARY.bahay
-    case 'Multigenerational / Banyan':return LIBRARY.banyan
-    case 'Dynasty / Legacy Builder':  return LIBRARY.dynasty
-    case 'Music & Entertainment':     return LIBRARY.crooner
-    case 'Stealth Wealth':            return LIBRARY.stealthWealth
-    case 'Texas Hill Country':        return LIBRARY.hillCountry
-    case 'American / Patriot':        return LIBRARY.patriot
-    case 'Celestial / Cosmic':           return LIBRARY.celestial
-    case 'Car Vault / Collector':          return LIBRARY.carVault
-    case 'Executive Motor Court':          return LIBRARY.executiveMotorCourt
-    case 'Backyard Track House':           return LIBRARY.backyardTrack
-    case 'Little Drivers\' House':         return LIBRARY.lilDrivers
-    case 'Weekend Cars & Coffee':          return LIBRARY.weekendCoffee
-    case 'Overland / Adventure Homestead': return LIBRARY.overland
-    case 'Mediterranean / Spanish':
-      return (climate === 'Mild / Coastal' || views === 'Water / Lake')
-        ? LIBRARY.aegean
-        : LIBRARY.mediterranean
-    case 'Traditional / Classic':
-      return LIBRARY.regency
-    case 'Farmhouse / Agrarian':
-      if (hasSlowLiving || hasHomeschool) return LIBRARY.hearth
-      return LIBRARY.homestead
-    case 'Minimalist / Contemporary':
-      return hasPrivacy ? LIBRARY.stealthWealth : LIBRARY.zen
-    case 'Modern Organic':
-      // Fall through to lifestyle/climate logic below
-      break
+    // Cottage
+    case 'Banyan 1600':          return LIBRARY.banyan1600
+    case 'Canyon 1500':          return LIBRARY.canyon1500
+    case 'Cedar 1800':           return LIBRARY.cedar1800
+    case 'Coastal 1600':         return LIBRARY.coastal1600
+    case 'Hearth 1800':          return LIBRARY.hearth1800
+    case 'Magnolia 1800 Cottage':return LIBRARY.magnolia1800Cottage
+    case 'Oakmont 1800 Cottage': return LIBRARY.oakmont1800Cottage
+    case 'Prairie 1600':         return LIBRARY.prairie1600
+    case 'Summit 1800':          return LIBRARY.summit1800
+    case 'Velocity 1500':        return LIBRARY.velocity1500
+    // Signature
+    case 'Aspen 2800':           return LIBRARY.aspen2800
+    case 'Banyan 2600':          return LIBRARY.banyan2600
+    case 'California 2000':      return LIBRARY.california2000
+    case 'Canyon 2100':          return LIBRARY.canyon2100
+    case 'Coastal 2000':         return LIBRARY.coastal2000
+    case 'Harbor 1900':          return LIBRARY.harbor1900
+    case 'Heritage 2300':        return LIBRARY.heritage2300
+    case 'Lone Star 2100':       return LIBRARY.loneStar2100
+    case 'Magnolia 2200':        return LIBRARY.magnolia2200
+    case 'Magnolia 2400':        return LIBRARY.magnolia2400
+    case 'Mesa 1800':            return LIBRARY.mesa1800
+    case 'Oakmont 2600':         return LIBRARY.oakmont2600
+    case 'Prairie 2000':         return LIBRARY.prairie2000
+    case 'Summit 2200':          return LIBRARY.summit2200
+    case 'Velocity 2400':        return LIBRARY.velocity2400
+    // Executive
+    case 'Aegean Estate':        return LIBRARY.aegean
+    case 'Alpine Estate':        return LIBRARY.alpine
+    case 'Backyard Track House': return LIBRARY.backyardTrack
+    case 'Car Vault':            return LIBRARY.carVault
+    case 'Creator Estate':       return LIBRARY.creator
+    case 'Fjord 3800':           return LIBRARY.fjord3800
+    case 'French Provence':      return LIBRARY.frenchProvence
+    case 'The Lotus':            return LIBRARY.lotus
+    case 'Mediterranean Estate': return LIBRARY.mediterranean
+    case 'Moroccan Riad':        return LIBRARY.moroccan
+    case 'Nordic Estate':        return LIBRARY.nordic
+    case 'Stealth Wealth':       return LIBRARY.stealthWealth
+    case 'Stillwater 3600':      return LIBRARY.stillwater3600
+    case 'The Banyan':           return LIBRARY.banyanExecutive
+    case 'The Hearth':           return LIBRARY.hearth
+    case 'Hill Country':         return LIBRARY.hillCountry
+    case 'The Patriot':          return LIBRARY.patriot
+    case 'Tropical Modern':      return LIBRARY.tropicalModern
+    case 'Villa 4200':           return LIBRARY.villa4200
+    case 'Wabi-Sabi':            return LIBRARY.wabiSabi
+    case 'Cars & Coffee':        return LIBRARY.weekendCoffee
+    // Legacy
+    case "Collector's Compound": return LIBRARY.collectorsCompound
+    case 'The Crooner':          return LIBRARY.crooner
+    case 'Dynasty Studio':       return LIBRARY.dynasty
+    case 'Executive Motor Court':return LIBRARY.executiveMotorCourt
+    case 'Future-Proof':         return LIBRARY.futureProof
+    case 'Little Drivers':       return LIBRARY.lilDrivers
+    case 'Maharaja Estate':      return LIBRARY.maharaja
+    case 'The Overland':         return LIBRARY.overland
+    case 'Stealth Wealth II':    return LIBRARY.stealthWealth2
+    case 'Bahay Legacy':         return LIBRARY.bahay
+    case 'The Banyan Estate':    return LIBRARY.banyan
+    case 'Desert Oasis':         return LIBRARY.desertOasis
+    case 'The Homestead':        return LIBRARY.homestead
+    case 'The Homestead II':     return LIBRARY.homestead2
+    case 'The Regency':          return LIBRARY.regency
+    case 'The Sanctuary':        return LIBRARY.sanctuary
+    case 'The Sporting Estate':  return LIBRARY.sportingEstate
   }
 
-  // ── 2. Climate — strong environment overrides ──────────────────────────────
-  if (climate === 'Hot & dry / Desert') return LIBRARY.desertOasis
-
+  // ── 2. Climate fallback ───────────────────────────────────────────────────
+  if (climate === 'Hot & dry / Desert')  return LIBRARY.desertOasis
   if (climate === 'Cold / Northern') {
-    return terrain === 'Hilly / Rolling' || views === 'Mountain / Hill'
-      ? LIBRARY.alpine
-      : LIBRARY.nordic
+    return (terrain === 'Hilly / Rolling' || views === 'Mountain / Hill') ? LIBRARY.alpine : LIBRARY.nordic
   }
+  if (climate === 'Mild / Coastal' || views === 'Water / Lake') return LIBRARY.oceanLegacy
+  if (climate === 'Hot & humid') return multi ? LIBRARY.bahay : LIBRARY.tropicalModern
 
-  if (climate === 'Mild / Coastal' || views === 'Water / Lake') {
-    return style === 'Mediterranean / Spanish' || style === 'Greek / Aegean'
-      ? LIBRARY.aegean
-      : LIBRARY.oceanLegacy
-  }
-
-  if (climate === 'Hot & humid') {
-    return multi ? LIBRARY.bahay : LIBRARY.tropicalModern
-  }
-
-  // ── 3. Lifestyle priority overrides ───────────────────────────────────────
-  if (hasResilience)                              return LIBRARY.futureProof
-  if (hasCreative)                                return LIBRARY.creator
-  if (hasEntertaining && hasLuxury)               return LIBRARY.crooner
-  if (hasPrivacy && hasLuxury)                    return LIBRARY.stealthWealth
+  // ── 3. Lifestyle fallback ─────────────────────────────────────────────────
+  if (hasResilience)                return LIBRARY.futureProof
+  if (hasCreative)                  return LIBRARY.creator
+  if (hasEntertaining && hasLuxury) return LIBRARY.crooner
+  if (hasPrivacy && hasLuxury)      return LIBRARY.stealthWealth
   if (hasSport) {
-    if (hasPrivacy || hasLuxury)                      return LIBRARY.executiveMotorCourt
-    if (hasResilience)                                return LIBRARY.overland
-    if (hasHomeschool || priorities.includes('Homeschooling')) return LIBRARY.lilDrivers
-    if (priorities.includes('Slow living') || priorities.includes('Entertaining')) return LIBRARY.weekendCoffee
-    if (multi || priorities.includes('Food & gardening')) return LIBRARY.collectorsCompound
+    if (hasPrivacy || hasLuxury)    return LIBRARY.executiveMotorCourt
+    if (hasResilience)              return LIBRARY.overland
+    if (hasHomeschool)              return LIBRARY.lilDrivers
+    if (hasSlowLiving || hasEntertaining) return LIBRARY.weekendCoffee
+    if (multi)                      return LIBRARY.collectorsCompound
     return LIBRARY.carVault
   }
-  if (hasWellness)                                return LIBRARY.sanctuary
-  if (hasSlowLiving && !hasHomeschool)            return LIBRARY.frenchProvence
+  if (hasWellness)                  return LIBRARY.sanctuary
+  if (hasSlowLiving)                return LIBRARY.frenchProvence
+  if (multi)                        return LIBRARY.banyan
 
-  // ── 4. Multigenerational ──────────────────────────────────────────────────
-  if (multi) return LIBRARY.banyan
-
-  // ── 5. Default (Modern Organic or no selection) ───────────────────────────
   return LIBRARY.modernResidence
 }

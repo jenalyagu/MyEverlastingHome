@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
+// useRef kept for EstateAestheticResult forwardRef compatibility
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Download } from 'lucide-react'
-import html2canvas from 'html2canvas'
 import { type Blueprint, type EstateFormData } from '../lib/blueprintGenerator'
 import { fetchBoardBrief, type BoardBriefResponse } from '../lib/fetchBoardBrief'
 import { matchEstateAesthetic } from '../lib/matchEstateAesthetic'
@@ -43,31 +43,14 @@ function LoadingScreen() {
 
 export default function BlueprintPage({ blueprint, formData, onBack }: BlueprintPageProps) {
   const [loading, setLoading]             = useState(true)
-  const [downloading, setDownloading]     = useState(false)
   const [briefResponse, setBriefResponse] = useState<BoardBriefResponse | null>(null)
   const hasInitialized = useRef(false)
   const resultRef      = useRef<HTMLDivElement>(null)
 
   const aestheticMatch = matchEstateAesthetic(formData)
 
-  const handleDownload = async () => {
-    if (!resultRef.current) return
-    setDownloading(true)
-    try {
-      const canvas = await html2canvas(resultRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#FDFAF6',
-        logging: false,
-      })
-      const link = document.createElement('a')
-      const name = briefResponse?.brief?.estateName ?? blueprint.estateName
-      link.download = `${name.replace(/\s+/g, '-')}-Blueprint.png`
-      link.href = canvas.toDataURL('image/png')
-      link.click()
-    } finally {
-      setDownloading(false)
-    }
+  const handleDownload = () => {
+    window.print()
   }
 
   useEffect(() => {
@@ -97,7 +80,7 @@ export default function BlueprintPage({ blueprint, formData, onBack }: Blueprint
       </AnimatePresence>
 
       {/* Header */}
-      <div className="bg-[#1A1614] px-4 lg:px-10 py-6 lg:py-8">
+      <div className="no-print bg-[#1A1614] px-4 lg:px-10 py-6 lg:py-8">
         <div className="max-w-7xl mx-auto">
           <button
             onClick={onBack}
@@ -128,11 +111,10 @@ export default function BlueprintPage({ blueprint, formData, onBack }: Blueprint
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
                 onClick={handleDownload}
-                disabled={downloading}
-                className="flex items-center gap-2 border border-[#C9A84C]/50 text-[#C9A84C] hover:bg-[#C9A84C]/10 disabled:opacity-50 px-4 py-2.5 rounded-sm text-sm font-medium tracking-wide transition-all flex-shrink-0 mt-1"
+                className="flex items-center gap-2 border border-[#C9A84C]/50 text-[#C9A84C] hover:bg-[#C9A84C]/10 px-4 py-2.5 rounded-sm text-sm font-medium tracking-wide transition-all flex-shrink-0 mt-1"
               >
-                <Download size={14} className={downloading ? 'animate-bounce' : ''} />
-                {downloading ? 'Saving…' : 'Download'}
+                <Download size={14} />
+                Download
               </motion.button>
             )}
           </div>
@@ -154,7 +136,7 @@ export default function BlueprintPage({ blueprint, formData, onBack }: Blueprint
       </div>
 
       {/* Disclaimer */}
-      <div className="bg-[#F7F3EE] border-b border-[#E8E0D5] px-4 lg:px-10 py-3">
+      <div className="no-print bg-[#F7F3EE] border-b border-[#E8E0D5] px-4 lg:px-10 py-3">
         <div className="max-w-7xl mx-auto">
           <p className="text-[#9B9189] text-[11px] leading-relaxed">
             <strong className="text-[#5C4033]">Concept tool only.</strong> Not licensed architectural documentation.
