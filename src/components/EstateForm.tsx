@@ -1,55 +1,13 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, Sparkles, Lock, X } from 'lucide-react'
+import { Check, Sparkles, ChevronRight, ChevronLeft } from 'lucide-react'
 import { type EstateFormData } from '../lib/blueprintGenerator'
-import { matchEstateAesthetic } from '../lib/matchEstateAesthetic'
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 type Tier = 'cottage' | 'signature' | 'executive' | 'legacy'
-
-const TIERS: { id: Tier; label: string; sublabel: string; lot: string; description: string }[] = [
-  {
-    id: 'cottage',
-    label: 'Cottage Series',
-    sublabel: '1,200–1,800 sq ft',
-    lot: 'Standard lot',
-    description: 'A beautifully finished SCIP home built for first-time buyers and young families. Smart layout, efficient footprint, and the permanence of concrete construction from day one.',
-  },
-  {
-    id: 'signature',
-    label: 'Signature Series',
-    sublabel: '1,800–3,000 sq ft',
-    lot: '< 1 acre',
-    description: 'More room to grow. A well-proportioned family home with defined zones for work, play, and rest — SCIP construction delivers the quiet and permanence a growing family deserves.',
-  },
-  {
-    id: 'executive',
-    label: 'Executive Series',
-    sublabel: '3,000–4,500 sq ft',
-    lot: '1–3 acres',
-    description: 'A fully custom home with room for every lifestyle priority — chef\'s kitchen, wellness suite, office, outdoor living. SCIP construction enables architectural details that wood frame can\'t match.',
-  },
-  {
-    id: 'legacy',
-    label: 'Legacy Series',
-    sublabel: '4,500–8,000+ sq ft',
-    lot: '3+ acres',
-    description: 'The full estate vision — motor courts, guest compounds, wellness wings, working orchards. A property engineered to hold and grow family legacy for generations.',
-  },
-]
-
-
-const emptyForm: EstateFormData = {
-  familySize: '', children: '', multigenerational: false, lifestylePriorities: [],
-  landSize: '', climate: '', terrain: '', views: '', privacyNeeds: '',
-  bedrooms: '', bathrooms: '', squareFootage: '', garageSpaces: '',
-  guestSuite: false, officStudio: false, homeschoolRoom: false, wellnessSuite: false,
-  chefKitchen: false, pantry: false, laundryMudroom: false, poolSpa: false,
-  reflectingPond: false, outdoorKitchen: false, fireLounge: false, orchard: false,
-  raisedBeds: false, greenhouse: false, sportCourt: false, playLawn: false,
-  aestheticStyle: '', budgetRange: '', buildTimeline: '', scipInterest: '',
-}
-
 type PlanClimate = 'hot-dry' | 'cold-mountain' | 'coastal' | 'four-season' | 'tropical' | 'performance'
+type LifestyleId = 'cars' | 'wellness' | 'entertaining' | 'nature' | 'work' | 'heritage' | 'privacy' | 'adventure'
 
 interface BlueprintPlan {
   style: string
@@ -58,474 +16,618 @@ interface BlueprintPlan {
   tagline: string
   imagePath: string
   climate: PlanClimate
+  lifestyle: LifestyleId[]
 }
 
-const CLIMATE_FILTERS: { id: PlanClimate; label: string; risk: string }[] = [
-  { id: 'hot-dry',       label: 'Hot & Dry',   risk: 'Extreme Heat · Wildfire' },
-  { id: 'cold-mountain', label: 'Mountain',     risk: 'Snow Load · Freeze-Thaw' },
-  { id: 'coastal',       label: 'Coastal',      risk: 'Salt Air · Wind · Flood' },
-  { id: 'four-season',   label: 'Four Seasons', risk: 'Tornadoes · Ice · Swings' },
-  { id: 'tropical',      label: 'Tropical',     risk: 'Hurricanes · Mold · Typhoons' },
-  { id: 'performance',   label: 'Performance',  risk: 'Any Condition' },
+interface QuizAnswers {
+  familySize: string
+  children: string
+  multigenerational: boolean
+  lifestylePriorities: LifestyleId[]
+  climate: PlanClimate | ''
+  tier: Tier | null
+}
+
+// ─── Data ────────────────────────────────────────────────────────────────────
+
+const LIFESTYLE_OPTIONS: { id: LifestyleId; label: string; icon: string; description: string }[] = [
+  { id: 'cars',         label: 'Cars & Performance',      icon: '🏎',  description: 'Your garage is as important as your kitchen' },
+  { id: 'wellness',     label: 'Wellness & Retreat',       icon: '🧘',  description: 'Sauna, cold plunge, stillness by design' },
+  { id: 'entertaining', label: 'Entertaining & Gathering', icon: '🥂',  description: 'Your home is where people want to be' },
+  { id: 'nature',       label: 'Land & Nature',            icon: '🌿',  description: 'Orchards, open sky, room to roam' },
+  { id: 'work',         label: 'Work & Creation',          icon: '🎙',  description: 'Studio, office, maker space — built in' },
+  { id: 'heritage',     label: 'Heritage & Craft',         icon: '🏛',  description: 'Timeless materials, traditional proportions' },
+  { id: 'privacy',      label: 'Privacy & Security',       icon: '🔒',  description: 'Gated, quiet, away from everything' },
+  { id: 'adventure',    label: 'Adventure & Self-Reliance', icon: '🏕',  description: 'Off-grid capable, rugged, built for anything' },
 ]
 
-const COTTAGE_PLANS: BlueprintPlan[] = [
-  { style: 'Banyan 1600',          name: 'Banyan 1600',    sqft: '1,600 sq ft', climate: 'tropical',      tagline: 'Multigenerational warmth, deep verandas, communal living at cottage scale',  imagePath: '/EstateAesthetics/CottageTier/Banyan1600.webp' },
-  { style: 'Canyon 1500',          name: 'Canyon 1500',    sqft: '1,500 sq ft', climate: 'hot-dry',       tagline: 'Southwestern palette, desert canyon character, compact and efficient',       imagePath: '/EstateAesthetics/CottageTier/Canyon1500.webp' },
-  { style: 'Cedar 1800',           name: 'Cedar 1800',     sqft: '1,800 sq ft', climate: 'coastal',       tagline: 'Warm cedar tones, natural materials, Pacific Northwest character',           imagePath: '/EstateAesthetics/CottageTier/Cedar1800.webp' },
-  { style: 'Coastal 1600',         name: 'Coastal 1600',   sqft: '1,600 sq ft', climate: 'coastal',       tagline: 'Salt-air resilient, board-and-batten, Pacific coastal character',            imagePath: '/EstateAesthetics/CottageTier/Coastal1600.webp' },
-  { style: 'Hearth 1800',          name: 'Hearth 1800',    sqft: '1,800 sq ft', climate: 'four-season',   tagline: 'Farmhouse warmth, fireplace-centered, built for four seasons',               imagePath: '/EstateAesthetics/CottageTier/Hearth1800.webp' },
-  { style: 'Magnolia 1800 Cottage',name: 'Magnolia 1800',  sqft: '1,800 sq ft', climate: 'four-season',   tagline: 'Southern grace, shaded porches, traditional proportions',                   imagePath: '/EstateAesthetics/CottageTier/Magnolia1800.webp' },
-  { style: 'Oakmont 1800 Cottage', name: 'Oakmont 1800',   sqft: '1,800 sq ft', climate: 'four-season',   tagline: 'Classic English character, oak millwork, timeless cottage proportions',      imagePath: '/EstateAesthetics/CottageTier/Oakmont1800.webp' },
-  { style: 'Prairie 1600',         name: 'Prairie 1600',   sqft: '1,600 sq ft', climate: 'four-season',   tagline: 'Prairie horizontal lines, open land character, farmhouse spirit',            imagePath: '/EstateAesthetics/CottageTier/Prairie1600.webp' },
-  { style: 'Summit 1800',          name: 'Summit 1800',    sqft: '1,800 sq ft', climate: 'cold-mountain', tagline: 'Alpine character, rugged materials, mountain-ready construction',            imagePath: '/EstateAesthetics/CottageTier/Summit1800.webp' },
-  { style: 'Velocity 1500',        name: 'Velocity 1500',  sqft: '1,500 sq ft', climate: 'performance',   tagline: 'Sleek and fast-lined, high-performance minimalism at entry footprint',       imagePath: '/EstateAesthetics/CottageTier/Velocity1500.webp' },
+const FAMILY_SIZES = ['Just us (1–2)', 'Small family (3–4)', 'Growing family (5–6)', 'Large household (7+)']
+const CHILDREN_OPTIONS = ['Yes', 'Not yet', 'No']
+
+const TIERS: { id: Tier; label: string; sublabel: string; lot: string }[] = [
+  { id: 'cottage',   label: 'Cottage Series',   sublabel: '1,200–1,800 sq ft', lot: 'Standard lot' },
+  { id: 'signature', label: 'Signature Series', sublabel: '1,800–3,000 sq ft', lot: '< 1 acre' },
+  { id: 'executive', label: 'Executive Series', sublabel: '3,000–4,500 sq ft', lot: '1–3 acres' },
+  { id: 'legacy',    label: 'Legacy Series',    sublabel: '4,500–8,000+ sq ft', lot: '3+ acres' },
 ]
 
-const EXECUTIVE_PLANS: BlueprintPlan[] = [
-  { style: 'Aegean Estate',        name: 'Aegean Estate',        sqft: '3,000–4,500 sq ft', climate: 'coastal',       tagline: 'Greek island character, whitewashed stone, coastal breezes',              imagePath: '/EstateAesthetics/ExecutiveTier/AegeanVertical.webp' },
-  { style: 'Alpine Estate',        name: 'Alpine Estate',        sqft: '3,000–4,500 sq ft', climate: 'cold-mountain', tagline: 'Rugged timber, stacked stone, built for mountain living',                 imagePath: '/EstateAesthetics/ExecutiveTier/AlpineVertical.webp' },
-  { style: 'Backyard Track House', name: 'Backyard Track House', sqft: '3,000–4,500 sq ft', climate: 'performance',   tagline: 'Performance-first compound, poured concrete, purpose-built precision',    imagePath: '/EstateAesthetics/ExecutiveTier/BackyardTrackHouseVertical.webp' },
-  { style: 'Car Vault',            name: 'Car Vault',            sqft: '3,000–4,500 sq ft', climate: 'performance',   tagline: 'Museum-grade automotive home, climate-controlled glass vaults',           imagePath: '/EstateAesthetics/ExecutiveTier/CarVaultVertical.webp' },
-  { style: 'Creator Estate',       name: 'Creator Estate',       sqft: '3,000–4,500 sq ft', climate: 'four-season',   tagline: 'Studio-integrated living, maker spaces, acoustic design',                 imagePath: '/EstateAesthetics/ExecutiveTier/CreatorEstateVertical.webp' },
-  { style: 'Fjord 3800',           name: 'Fjord 3800',           sqft: '3,800 sq ft',        climate: 'cold-mountain', tagline: 'Norwegian scale, dark timber and slate, built for dramatic landscapes',   imagePath: '/EstateAesthetics/ExecutiveTier/Fjord3800.webp' },
-  { style: 'French Provence',      name: 'French Provence',      sqft: '3,000–4,500 sq ft', climate: 'coastal',       tagline: 'Natural limestone, aged oak, unhurried Provençal grace',                  imagePath: '/EstateAesthetics/ExecutiveTier/FrenchProvenceVertical.webp' },
-  { style: 'The Lotus',            name: 'The Lotus',            sqft: '3,000–4,500 sq ft', climate: 'hot-dry',       tagline: 'Vastu-aligned, sandstone, hand-carved teak, harmonious living',           imagePath: '/EstateAesthetics/ExecutiveTier/LotusVertical.webp' },
-  { style: 'Mediterranean Estate', name: 'Mediterranean Estate', sqft: '3,000–4,500 sq ft', climate: 'coastal',       tagline: 'Sun-warmed plaster, terracotta tile, iron-forged detail',                 imagePath: '/EstateAesthetics/ExecutiveTier/MediterraneanVertical.webp' },
-  { style: 'Moroccan Riad',        name: 'Moroccan Riad',        sqft: '3,000–4,500 sq ft', climate: 'hot-dry',       tagline: 'Zellige tile, tadelakt plaster, courtyard-centered sanctuary',            imagePath: '/EstateAesthetics/ExecutiveTier/MoroccanEstateVertical.webp' },
-  { style: 'Nordic Estate',        name: 'Nordic Estate',        sqft: '3,000–4,500 sq ft', climate: 'cold-mountain', tagline: 'Hygge warmth, white-painted timber, slow Nordic living',                  imagePath: '/EstateAesthetics/ExecutiveTier/NordicVertical.webp' },
-  { style: 'Stealth Wealth',       name: 'Stealth Wealth',       sqft: '3,000–4,500 sq ft', climate: 'four-season',   tagline: 'Quiet luxury, limestone and unlacquered brass, understated mastery',      imagePath: '/EstateAesthetics/ExecutiveTier/StealthWealthVertical.webp' },
-  { style: 'Stillwater 3600',      name: 'Stillwater 3600',      sqft: '3,600 sq ft',        climate: 'coastal',       tagline: 'Lake-country calm, board-form concrete, built for uninterrupted water views', imagePath: '/EstateAesthetics/ExecutiveTier/Stillwater3600.webp' },
-  { style: 'The Banyan',           name: 'The Banyan',           sqft: '3,000–4,500 sq ft', climate: 'tropical',      tagline: 'Multigenerational by design, deep verandas, rooted in family',            imagePath: '/EstateAesthetics/ExecutiveTier/TheBanyanVertical2.webp' },
-  { style: 'The Hearth',           name: 'The Hearth',           sqft: '3,000–4,500 sq ft', climate: 'four-season',   tagline: 'Farmhouse warmth, fireplace as the family anchor, four-season soul',      imagePath: '/EstateAesthetics/ExecutiveTier/TheHearthVertical.webp' },
-  { style: 'Hill Country',         name: 'Hill Country',         sqft: '3,000–4,500 sq ft', climate: 'four-season',   tagline: 'Native limestone, reclaimed cedar, built for the Texas land',             imagePath: '/EstateAesthetics/ExecutiveTier/TheHillCountryTXVertical.webp' },
-  { style: 'The Patriot',          name: 'The Patriot',          sqft: '3,000–4,500 sq ft', climate: 'four-season',   tagline: 'Red brick, white millwork, American legacy and heritage pride',            imagePath: '/EstateAesthetics/ExecutiveTier/ThePatriotEstateVertical.webp' },
-  { style: 'Tropical Modern',      name: 'Tropical Modern',      sqft: '3,000–4,500 sq ft', climate: 'tropical',      tagline: 'Teak, coral stone, open-pavilion living in a lush setting',               imagePath: '/EstateAesthetics/ExecutiveTier/TropicalModernVertical.webp' },
-  { style: 'Villa 4200',           name: 'Villa 4200',           sqft: '4,200 sq ft',        climate: 'coastal',       tagline: 'Italian villa proportions, arched loggias, estate-scale Mediterranean living', imagePath: '/EstateAesthetics/ExecutiveTier/Villa4200.webp' },
-  { style: 'Wabi-Sabi',            name: 'Wabi-Sabi',            sqft: '3,000–4,500 sq ft', climate: 'four-season',   tagline: 'Aged timber, rammed earth, quiet Japanese imperfection',                  imagePath: '/EstateAesthetics/ExecutiveTier/WabiSabiVertical.webp' },
-  { style: 'Cars & Coffee',        name: 'Cars & Coffee',        sqft: '3,000–4,500 sq ft', climate: 'performance',   tagline: 'Drive-thru porte-cochère, lounge finishes, weekends with good cars',      imagePath: '/EstateAesthetics/ExecutiveTier/WeekendCoffeeCarsVertical.webp' },
+const CLIMATES: { id: PlanClimate; label: string; note: string }[] = [
+  { id: 'coastal',       label: 'Coastal',       note: 'Salt air · Wind · Flood' },
+  { id: 'four-season',   label: 'Four Seasons',  note: 'Tornadoes · Ice · Snow' },
+  { id: 'hot-dry',       label: 'Hot & Dry',     note: 'Extreme Heat · Wildfire' },
+  { id: 'tropical',      label: 'Tropical',      note: 'Hurricanes · Mold · Typhoons' },
+  { id: 'cold-mountain', label: 'Mountain',      note: 'Snow Load · Freeze-Thaw' },
+  { id: 'performance',   label: 'Anywhere',      note: 'Any climate · Maximum resilience' },
 ]
 
-const LEGACY_PLANS: BlueprintPlan[] = [
-  { style: "Collector's Compound",  name: "Collector's Compound",  sqft: '4,500–8,000+ sq ft', climate: 'performance',   tagline: 'Fortified compound, secured vaults, collector-grade infrastructure',       imagePath: '/EstateAesthetics/LegacyTier/CollectorsCompoundVertical.webp' },
-  { style: 'The Crooner',           name: 'The Crooner',           sqft: '4,500–8,000+ sq ft', climate: 'four-season',   tagline: 'Rich walnut, grand entertaining spaces, built for gathering and song',    imagePath: '/EstateAesthetics/LegacyTier/CroonerVertical.webp' },
-  { style: 'Dynasty Studio',        name: 'Dynasty Studio',        sqft: '4,500–8,000+ sq ft', climate: 'four-season',   tagline: 'Legacy builder estate, dark timber, built to be passed down',             imagePath: '/EstateAesthetics/LegacyTier/DynastyStudioVertical.webp' },
-  { style: 'Executive Motor Court', name: 'Executive Motor Court', sqft: '4,500–8,000+ sq ft', climate: 'four-season',   tagline: 'Gated arrival sequence, limestone, moves without being seen',             imagePath: '/EstateAesthetics/LegacyTier/ExecutiveMotorCourtVertical.webp' },
-  { style: 'Future-Proof',          name: 'Future-Proof',          sqft: '4,500–8,000+ sq ft', climate: 'performance',   tagline: 'Resilience-first design, self-sufficient systems, built for anything',     imagePath: '/EstateAesthetics/LegacyTier/FutureProofVertical.webp' },
-  { style: 'Little Drivers',        name: 'Little Drivers',        sqft: '4,500–8,000+ sq ft', climate: 'performance',   tagline: 'Next-generation automotive, training spaces, nurturing a lifelong passion', imagePath: '/EstateAesthetics/LegacyTier/LilDriversVertical.webp' },
-  { style: 'Maharaja Estate',       name: 'Maharaja Estate',       sqft: '4,500–8,000+ sq ft', climate: 'hot-dry',       tagline: 'Marble inlay, carved sandstone, regal South Asian palace living',          imagePath: '/EstateAesthetics/LegacyTier/MaharajaEstateWide.webp' },
-  { style: 'The Overland',          name: 'The Overland',          sqft: '4,500–8,000+ sq ft', climate: 'performance',   tagline: 'Rugged stone, corrugated steel, self-reliant adventure homestead',         imagePath: '/EstateAesthetics/LegacyTier/OverlandVertical.webp' },
-  { style: 'Stealth Wealth II',     name: 'Stealth Wealth II',     sqft: '4,500–8,000+ sq ft', climate: 'four-season',   tagline: 'Impeccable restraint at estate scale, hand-selected materials only',       imagePath: '/EstateAesthetics/LegacyTier/StealthWealthVertical2.webp' },
-  { style: 'Bahay Legacy',          name: 'Bahay Legacy',          sqft: '4,500–8,000+ sq ft', climate: 'tropical',      tagline: 'Filipino heritage, native hardwoods, wide lanais, warmly communal',        imagePath: '/EstateAesthetics/LegacyTier/TheBahayLegacyWide.webp' },
-  { style: 'The Banyan Estate',     name: 'The Banyan Estate',     sqft: '4,500–8,000+ sq ft', climate: 'tropical',      tagline: 'Full multigenerational compound, rooted for every generation to thrive',   imagePath: '/EstateAesthetics/LegacyTier/TheBanyanEstateWide.webp' },
-  { style: 'Desert Oasis',          name: 'Desert Oasis',          sqft: '4,500–8,000+ sq ft', climate: 'hot-dry',       tagline: 'Thermal mass fortress, wildfire-resistant concrete, desert sanctuary',     imagePath: '/EstateAesthetics/LegacyTier/TheDesertOasisVertical.webp' },
-  { style: 'The Homestead',         name: 'The Homestead',         sqft: '4,500–8,000+ sq ft', climate: 'four-season',   tagline: 'Working agrarian estate, orchard-ready land, built for self-reliance',    imagePath: '/EstateAesthetics/LegacyTier/TheHomesteadVertical.webp' },
-  { style: 'The Homestead II',      name: 'The Homestead II',      sqft: '4,500–8,000+ sq ft', climate: 'four-season',   tagline: 'Expanded agrarian compound, barn, workshop, and multi-structure living',   imagePath: '/EstateAesthetics/LegacyTier/TheHomesteadVertical2.webp' },
-  { style: 'The Regency',           name: 'The Regency',           sqft: '4,500–8,000+ sq ft', climate: 'four-season',   tagline: 'European manor grandeur, limestone quoins, timeless formal gardens',       imagePath: '/EstateAesthetics/LegacyTier/TheRegencyEstateVertical.webp' },
-  { style: 'The Sanctuary',         name: 'The Sanctuary',         sqft: '4,500–8,000+ sq ft', climate: 'coastal',       tagline: 'Wellness legacy estate, spa, cold plunge, meditation — at full scale',     imagePath: '/EstateAesthetics/LegacyTier/TheSanctuaryVertical.webp' },
-  { style: 'The Sporting Estate',   name: 'The Sporting Estate',   sqft: '4,500–8,000+ sq ft', climate: 'four-season',   tagline: 'Sport courts, trails, outdoor programming — the active family legacy',     imagePath: '/EstateAesthetics/LegacyTier/TheSportingEstateVertical2.webp' },
+const ALL_PLANS: BlueprintPlan[] = [
+  // Cottage
+  { style: 'Banyan 1600',           name: 'Banyan 1600',           sqft: '1,600 sq ft', climate: 'tropical',      lifestyle: ['nature','heritage'],      tagline: 'Multigenerational warmth, deep verandas, communal living at cottage scale',    imagePath: '/EstateAesthetics/CottageTier/Banyan1600.webp' },
+  { style: 'Canyon 1500',           name: 'Canyon 1500',           sqft: '1,500 sq ft', climate: 'hot-dry',       lifestyle: ['nature','privacy'],       tagline: 'Southwestern palette, desert canyon character, compact and efficient',         imagePath: '/EstateAesthetics/CottageTier/Canyon1500.webp' },
+  { style: 'Cedar 1800',            name: 'Cedar 1800',            sqft: '1,800 sq ft', climate: 'coastal',       lifestyle: ['nature','wellness'],      tagline: 'Warm cedar tones, natural materials, Pacific Northwest character',             imagePath: '/EstateAesthetics/CottageTier/Cedar1800.webp' },
+  { style: 'Coastal 1600',          name: 'Coastal 1600',          sqft: '1,600 sq ft', climate: 'coastal',       lifestyle: ['wellness','nature'],      tagline: 'Salt-air resilient, board-and-batten, Pacific coastal character',              imagePath: '/EstateAesthetics/CottageTier/Coastal1600.webp' },
+  { style: 'Hearth 1800',           name: 'Hearth 1800',           sqft: '1,800 sq ft', climate: 'four-season',   lifestyle: ['heritage','entertaining'], tagline: 'Farmhouse warmth, fireplace-centered, built for four seasons',                 imagePath: '/EstateAesthetics/CottageTier/Hearth1800.webp' },
+  { style: 'Magnolia 1800 Cottage', name: 'Magnolia 1800',         sqft: '1,800 sq ft', climate: 'four-season',   lifestyle: ['heritage','entertaining'], tagline: 'Southern grace, shaded porches, traditional proportions',                     imagePath: '/EstateAesthetics/CottageTier/Magnolia1800.webp' },
+  { style: 'Oakmont 1800 Cottage',  name: 'Oakmont 1800',          sqft: '1,800 sq ft', climate: 'four-season',   lifestyle: ['heritage','nature'],      tagline: 'Classic English character, oak millwork, timeless cottage proportions',        imagePath: '/EstateAesthetics/CottageTier/Oakmont1800.webp' },
+  { style: 'Prairie 1600',          name: 'Prairie 1600',          sqft: '1,600 sq ft', climate: 'four-season',   lifestyle: ['nature','heritage'],      tagline: 'Prairie horizontal lines, open land character, farmhouse spirit',              imagePath: '/EstateAesthetics/CottageTier/Prairie1600.webp' },
+  { style: 'Summit 1800',           name: 'Summit 1800',           sqft: '1,800 sq ft', climate: 'cold-mountain', lifestyle: ['adventure','nature'],     tagline: 'Alpine character, rugged materials, mountain-ready construction',              imagePath: '/EstateAesthetics/CottageTier/Summit1800.webp' },
+  { style: 'Velocity 1500',         name: 'Velocity 1500',         sqft: '1,500 sq ft', climate: 'performance',   lifestyle: ['cars','work'],            tagline: 'Sleek and fast-lined, high-performance minimalism at entry footprint',         imagePath: '/EstateAesthetics/CottageTier/Velocity1500.webp' },
+  // Signature
+  { style: 'Aspen 2800',            name: 'Aspen 2800',            sqft: '2,800 sq ft', climate: 'cold-mountain', lifestyle: ['nature','wellness'],      tagline: 'Mountain modern, aspen grove setting, warm timber and stone',                  imagePath: '/EstateAesthetics/Signature:ResidenceTier/Aspen2800.webp' },
+  { style: 'Banyan 2600',           name: 'Banyan 2600',           sqft: '2,600 sq ft', climate: 'tropical',      lifestyle: ['nature','heritage'],      tagline: 'Deep verandas, native hardwoods, multigenerational warmth at family scale',    imagePath: '/EstateAesthetics/Signature:ResidenceTier/Banyan2600.webp' },
+  { style: 'California 2000',       name: 'California 2000',       sqft: '2,000 sq ft', climate: 'coastal',       lifestyle: ['wellness','entertaining'], tagline: 'Indoor-outdoor flow, warm oak, open-plan California modern character',         imagePath: '/EstateAesthetics/Signature:ResidenceTier/California2000.webp' },
+  { style: 'Canyon 2100',           name: 'Canyon 2100',           sqft: '2,100 sq ft', climate: 'hot-dry',       lifestyle: ['nature','privacy'],       tagline: 'Southwestern character, desert palette, rammed earth and concrete',            imagePath: '/EstateAesthetics/Signature:ResidenceTier/Canyon2100.webp' },
+  { style: 'Coastal 2000',          name: 'Coastal 2000',          sqft: '2,000 sq ft', climate: 'coastal',       lifestyle: ['wellness','nature'],      tagline: 'Coastal modern, clean lines, salt-air resilient construction',                 imagePath: '/EstateAesthetics/Signature:ResidenceTier/Coastal2000.webp' },
+  { style: 'Harbor 1900',           name: 'Harbor 1900',           sqft: '1,900 sq ft', climate: 'coastal',       lifestyle: ['nature','entertaining'],  tagline: 'Coastal shingle, deep eaves, built for salt air and working harbor views',     imagePath: '/EstateAesthetics/Signature:ResidenceTier/Harbor1900.webp' },
+  { style: 'Heritage 2300',         name: 'Heritage 2300',         sqft: '2,300 sq ft', climate: 'four-season',   lifestyle: ['heritage','privacy'],     tagline: 'American heritage proportions, brick and stone, built to be handed down',      imagePath: '/EstateAesthetics/Signature:ResidenceTier/Heritage2300.webp' },
+  { style: 'Lone Star 2100',        name: 'Lone Star 2100',        sqft: '2,100 sq ft', climate: 'four-season',   lifestyle: ['heritage','nature'],      tagline: 'Texas limestone, cedar beam, wide-porch living on open land',                  imagePath: '/EstateAesthetics/Signature:ResidenceTier/LoneStar2100.webp' },
+  { style: 'Magnolia 2200',         name: 'Magnolia 2200',         sqft: '2,200 sq ft', climate: 'four-season',   lifestyle: ['heritage','entertaining'], tagline: 'Southern grace refined — shaded verandas and classic proportions at family scale', imagePath: '/EstateAesthetics/Signature:ResidenceTier/Magnolia2200.webp' },
+  { style: 'Magnolia 2400',         name: 'Magnolia 2400',         sqft: '2,400 sq ft', climate: 'four-season',   lifestyle: ['heritage','entertaining'], tagline: 'Southern grace, traditional proportions, shaded porches and gardens',           imagePath: '/EstateAesthetics/Signature:ResidenceTier/Magnolia2400.webp' },
+  { style: 'Mesa 1800',             name: 'Mesa 1800',             sqft: '1,800 sq ft', climate: 'hot-dry',       lifestyle: ['wellness','nature'],      tagline: 'Adobe warmth, rammed earth palette, Southwest mesa character',                  imagePath: '/EstateAesthetics/Signature:ResidenceTier/Mesa1800.webp' },
+  { style: 'Oakmont 2600',          name: 'Oakmont 2600',          sqft: '2,600 sq ft', climate: 'four-season',   lifestyle: ['heritage','privacy'],     tagline: 'Classic English character, oak millwork, timeless proportions',                 imagePath: '/EstateAesthetics/Signature:ResidenceTier/Oakmont2600.webp' },
+  { style: 'Prairie 2000',          name: 'Prairie 2000',          sqft: '2,000 sq ft', climate: 'four-season',   lifestyle: ['nature','heritage'],      tagline: 'Prairie horizontal lines, farmhouse spirit, open land setting',                 imagePath: '/EstateAesthetics/Signature:ResidenceTier/Prairie2000.webp' },
+  { style: 'Summit 2200',           name: 'Summit 2200',           sqft: '2,200 sq ft', climate: 'cold-mountain', lifestyle: ['adventure','nature'],     tagline: 'Mountain modern, dark timber and stone, built for the peaks',                   imagePath: '/EstateAesthetics/Signature:ResidenceTier/Summit2200.webp' },
+  { style: 'Velocity 2400',         name: 'Velocity 2400',         sqft: '2,400 sq ft', climate: 'performance',   lifestyle: ['cars','work'],            tagline: 'High-performance aesthetic, precision layout, built for the active family',      imagePath: '/EstateAesthetics/Signature:ResidenceTier/Velocity2400.webp' },
+  // Executive
+  { style: 'Aegean Estate',         name: 'Aegean Estate',         sqft: '3,000–4,500 sq ft', climate: 'coastal',       lifestyle: ['wellness','entertaining'],  tagline: 'Greek island character, whitewashed stone, coastal breezes',                  imagePath: '/EstateAesthetics/ExecutiveTier/AegeanVertical.webp' },
+  { style: 'Alpine Estate',         name: 'Alpine Estate',         sqft: '3,000–4,500 sq ft', climate: 'cold-mountain', lifestyle: ['adventure','nature'],       tagline: 'Rugged timber, stacked stone, built for mountain living',                     imagePath: '/EstateAesthetics/ExecutiveTier/AlpineVertical.webp' },
+  { style: 'Backyard Track House',  name: 'Backyard Track House',  sqft: '3,000–4,500 sq ft', climate: 'performance',   lifestyle: ['cars','adventure'],         tagline: 'Performance-first compound, poured concrete, purpose-built precision',         imagePath: '/EstateAesthetics/ExecutiveTier/BackyardTrackHouseVertical.webp' },
+  { style: 'Car Vault',             name: 'Car Vault',             sqft: '3,000–4,500 sq ft', climate: 'performance',   lifestyle: ['cars','privacy'],           tagline: 'Museum-grade automotive home, climate-controlled glass vaults',                imagePath: '/EstateAesthetics/ExecutiveTier/CarVaultVertical.webp' },
+  { style: 'Creator Estate',        name: 'Creator Estate',        sqft: '3,000–4,500 sq ft', climate: 'four-season',   lifestyle: ['work','heritage'],          tagline: 'Studio-integrated living, maker spaces, acoustic design',                     imagePath: '/EstateAesthetics/ExecutiveTier/CreatorEstateVertical.webp' },
+  { style: 'Fjord 3800',            name: 'Fjord 3800',            sqft: '3,800 sq ft',        climate: 'cold-mountain', lifestyle: ['nature','wellness'],        tagline: 'Norwegian scale, dark timber and slate, built for dramatic landscapes',        imagePath: '/EstateAesthetics/ExecutiveTier/Fjord3800.webp' },
+  { style: 'French Provence',       name: 'French Provence',       sqft: '3,000–4,500 sq ft', climate: 'coastal',       lifestyle: ['entertaining','heritage'],  tagline: 'Natural limestone, aged oak, unhurried Provençal grace',                      imagePath: '/EstateAesthetics/ExecutiveTier/FrenchProvenceVertical.webp' },
+  { style: 'The Lotus',             name: 'The Lotus',             sqft: '3,000–4,500 sq ft', climate: 'hot-dry',       lifestyle: ['wellness','heritage'],      tagline: 'Vastu-aligned, sandstone, hand-carved teak, harmonious living',               imagePath: '/EstateAesthetics/ExecutiveTier/LotusVertical.webp' },
+  { style: 'Mediterranean Estate',  name: 'Mediterranean Estate',  sqft: '3,000–4,500 sq ft', climate: 'coastal',       lifestyle: ['entertaining','wellness'],  tagline: 'Sun-warmed plaster, terracotta tile, iron-forged detail',                     imagePath: '/EstateAesthetics/ExecutiveTier/MediterraneanVertical.webp' },
+  { style: 'Moroccan Riad',         name: 'Moroccan Riad',         sqft: '3,000–4,500 sq ft', climate: 'hot-dry',       lifestyle: ['wellness','privacy'],       tagline: 'Zellige tile, tadelakt plaster, courtyard-centered sanctuary',                 imagePath: '/EstateAesthetics/ExecutiveTier/MoroccanEstateVertical.webp' },
+  { style: 'Nordic Estate',         name: 'Nordic Estate',         sqft: '3,000–4,500 sq ft', climate: 'cold-mountain', lifestyle: ['wellness','nature'],        tagline: 'Hygge warmth, white-painted timber, slow Nordic living',                      imagePath: '/EstateAesthetics/ExecutiveTier/NordicVertical.webp' },
+  { style: 'Stealth Wealth',        name: 'Stealth Wealth',        sqft: '3,000–4,500 sq ft', climate: 'four-season',   lifestyle: ['privacy','heritage'],       tagline: 'Quiet luxury, limestone and unlacquered brass, understated mastery',           imagePath: '/EstateAesthetics/ExecutiveTier/StealthWealthVertical.webp' },
+  { style: 'Stillwater 3600',       name: 'Stillwater 3600',       sqft: '3,600 sq ft',        climate: 'coastal',       lifestyle: ['wellness','nature'],        tagline: 'Lake-country calm, board-form concrete, built for uninterrupted water views',  imagePath: '/EstateAesthetics/ExecutiveTier/Stillwater3600.webp' },
+  { style: 'The Banyan',            name: 'The Banyan',            sqft: '3,000–4,500 sq ft', climate: 'tropical',      lifestyle: ['heritage','nature'],        tagline: 'Multigenerational by design, deep verandas, rooted in family',                imagePath: '/EstateAesthetics/ExecutiveTier/TheBanyanVertical2.webp' },
+  { style: 'The Hearth',            name: 'The Hearth',            sqft: '3,000–4,500 sq ft', climate: 'four-season',   lifestyle: ['heritage','entertaining'],  tagline: 'Farmhouse warmth, fireplace as the family anchor, four-season soul',           imagePath: '/EstateAesthetics/ExecutiveTier/TheHearthVertical.webp' },
+  { style: 'Hill Country',          name: 'Hill Country',          sqft: '3,000–4,500 sq ft', climate: 'four-season',   lifestyle: ['heritage','nature'],        tagline: 'Native limestone, reclaimed cedar, built for the Texas land',                  imagePath: '/EstateAesthetics/ExecutiveTier/TheHillCountryTXVertical.webp' },
+  { style: 'The Patriot',           name: 'The Patriot',           sqft: '3,000–4,500 sq ft', climate: 'four-season',   lifestyle: ['heritage','privacy'],       tagline: 'Red brick, white millwork, American legacy and heritage pride',                imagePath: '/EstateAesthetics/ExecutiveTier/ThePatriotEstateVertical.webp' },
+  { style: 'Tropical Modern',       name: 'Tropical Modern',       sqft: '3,000–4,500 sq ft', climate: 'tropical',      lifestyle: ['entertaining','nature'],    tagline: 'Teak, coral stone, open-pavilion living in a lush setting',                   imagePath: '/EstateAesthetics/ExecutiveTier/TropicalModernVertical.webp' },
+  { style: 'Villa 4200',            name: 'Villa 4200',            sqft: '4,200 sq ft',        climate: 'coastal',       lifestyle: ['entertaining','heritage'],  tagline: 'Italian villa proportions, arched loggias, estate-scale Mediterranean living',  imagePath: '/EstateAesthetics/ExecutiveTier/Villa4200.webp' },
+  { style: 'Wabi-Sabi',             name: 'Wabi-Sabi',             sqft: '3,000–4,500 sq ft', climate: 'four-season',   lifestyle: ['wellness','nature'],        tagline: 'Aged timber, rammed earth, quiet Japanese imperfection',                       imagePath: '/EstateAesthetics/ExecutiveTier/WabiSabiVertical.webp' },
+  { style: 'Cars & Coffee',         name: 'Cars & Coffee',         sqft: '3,000–4,500 sq ft', climate: 'performance',   lifestyle: ['cars','entertaining'],      tagline: 'Drive-thru porte-cochère, lounge finishes, weekends with good cars',           imagePath: '/EstateAesthetics/ExecutiveTier/WeekendCoffeeCarsVertical.webp' },
+  // Legacy
+  { style: "Collector's Compound",  name: "Collector's Compound",  sqft: '4,500–8,000+ sq ft', climate: 'performance',   lifestyle: ['cars','privacy'],           tagline: 'Fortified compound, secured vaults, collector-grade infrastructure',            imagePath: '/EstateAesthetics/LegacyTier/CollectorsCompoundVertical.webp' },
+  { style: 'The Crooner',           name: 'The Crooner',           sqft: '4,500–8,000+ sq ft', climate: 'four-season',   lifestyle: ['entertaining','heritage'],  tagline: 'Rich walnut, grand entertaining spaces, built for gathering and song',          imagePath: '/EstateAesthetics/LegacyTier/CroonerVertical.webp' },
+  { style: 'Dynasty Studio',        name: 'Dynasty Studio',        sqft: '4,500–8,000+ sq ft', climate: 'four-season',   lifestyle: ['work','heritage'],          tagline: 'Legacy builder estate, dark timber, built to be passed down',                  imagePath: '/EstateAesthetics/LegacyTier/DynastyStudioVertical.webp' },
+  { style: 'Executive Motor Court', name: 'Executive Motor Court', sqft: '4,500–8,000+ sq ft', climate: 'four-season',   lifestyle: ['privacy','heritage'],       tagline: 'Gated arrival sequence, limestone, moves without being seen',                  imagePath: '/EstateAesthetics/LegacyTier/ExecutiveMotorCourtVertical.webp' },
+  { style: 'Future-Proof',          name: 'Future-Proof',          sqft: '4,500–8,000+ sq ft', climate: 'performance',   lifestyle: ['adventure','privacy'],      tagline: 'Resilience-first design, self-sufficient systems, built for anything',          imagePath: '/EstateAesthetics/LegacyTier/FutureProofVertical.webp' },
+  { style: 'Little Drivers',        name: 'Little Drivers',        sqft: '4,500–8,000+ sq ft', climate: 'performance',   lifestyle: ['cars','heritage'],          tagline: 'Next-generation automotive, training spaces, nurturing a lifelong passion',    imagePath: '/EstateAesthetics/LegacyTier/LilDriversVertical.webp' },
+  { style: 'Maharaja Estate',       name: 'Maharaja Estate',       sqft: '4,500–8,000+ sq ft', climate: 'hot-dry',       lifestyle: ['heritage','entertaining'],  tagline: 'Marble inlay, carved sandstone, regal South Asian palace living',              imagePath: '/EstateAesthetics/LegacyTier/MaharajaEstateWide.webp' },
+  { style: 'The Overland',          name: 'The Overland',          sqft: '4,500–8,000+ sq ft', climate: 'performance',   lifestyle: ['adventure','nature'],       tagline: 'Rugged stone, corrugated steel, self-reliant adventure homestead',              imagePath: '/EstateAesthetics/LegacyTier/OverlandVertical.webp' },
+  { style: 'Stealth Wealth II',     name: 'Stealth Wealth II',     sqft: '4,500–8,000+ sq ft', climate: 'four-season',   lifestyle: ['privacy','heritage'],       tagline: 'Impeccable restraint at estate scale, hand-selected materials only',           imagePath: '/EstateAesthetics/LegacyTier/StealthWealthVertical2.webp' },
+  { style: 'Bahay Legacy',          name: 'Bahay Legacy',          sqft: '4,500–8,000+ sq ft', climate: 'tropical',      lifestyle: ['heritage','nature'],        tagline: 'Filipino heritage, native hardwoods, wide lanais, warmly communal',             imagePath: '/EstateAesthetics/LegacyTier/TheBahayLegacyWide.webp' },
+  { style: 'The Banyan Estate',     name: 'The Banyan Estate',     sqft: '4,500–8,000+ sq ft', climate: 'tropical',      lifestyle: ['nature','heritage'],        tagline: 'Full multigenerational compound, rooted for every generation to thrive',        imagePath: '/EstateAesthetics/LegacyTier/TheBanyanEstateWide.webp' },
+  { style: 'Desert Oasis',          name: 'Desert Oasis',          sqft: '4,500–8,000+ sq ft', climate: 'hot-dry',       lifestyle: ['wellness','privacy'],       tagline: 'Thermal mass fortress, wildfire-resistant concrete, desert sanctuary',          imagePath: '/EstateAesthetics/LegacyTier/TheDesertOasisVertical.webp' },
+  { style: 'The Homestead',         name: 'The Homestead',         sqft: '4,500–8,000+ sq ft', climate: 'four-season',   lifestyle: ['nature','adventure'],       tagline: 'Working agrarian estate, orchard-ready land, built for self-reliance',          imagePath: '/EstateAesthetics/LegacyTier/TheHomesteadVertical.webp' },
+  { style: 'The Homestead II',      name: 'The Homestead II',      sqft: '4,500–8,000+ sq ft', climate: 'four-season',   lifestyle: ['nature','adventure'],       tagline: 'Expanded agrarian compound, barn, workshop, and multi-structure living',        imagePath: '/EstateAesthetics/LegacyTier/TheHomesteadVertical2.webp' },
+  { style: 'The Regency',           name: 'The Regency',           sqft: '4,500–8,000+ sq ft', climate: 'four-season',   lifestyle: ['heritage','entertaining'],  tagline: 'European manor grandeur, limestone quoins, timeless formal gardens',            imagePath: '/EstateAesthetics/LegacyTier/TheRegencyEstateVertical.webp' },
+  { style: 'The Sanctuary',         name: 'The Sanctuary',         sqft: '4,500–8,000+ sq ft', climate: 'coastal',       lifestyle: ['wellness','privacy'],       tagline: 'Wellness legacy estate, spa, cold plunge, meditation — at full scale',          imagePath: '/EstateAesthetics/LegacyTier/TheSanctuaryVertical.webp' },
+  { style: 'The Sporting Estate',   name: 'The Sporting Estate',   sqft: '4,500–8,000+ sq ft', climate: 'four-season',   lifestyle: ['adventure','nature'],       tagline: 'Sport courts, trails, outdoor programming — the active family legacy',          imagePath: '/EstateAesthetics/LegacyTier/TheSportingEstateVertical2.webp' },
 ]
 
-const SIGNATURE_PLANS: BlueprintPlan[] = [
-  { style: 'Aspen 2800',    name: 'Aspen 2800',    sqft: '2,800 sq ft', climate: 'cold-mountain', tagline: 'Mountain modern, aspen grove setting, warm timber and stone',                       imagePath: '/EstateAesthetics/Signature:ResidenceTier/Aspen2800.webp' },
-  { style: 'Banyan 2600',   name: 'Banyan 2600',   sqft: '2,600 sq ft', climate: 'tropical',      tagline: 'Deep verandas, native hardwoods, multigenerational warmth at family scale',         imagePath: '/EstateAesthetics/Signature:ResidenceTier/Banyan2600.webp' },
-  { style: 'California 2000',name: 'California 2000',sqft: '2,000 sq ft',climate: 'coastal',      tagline: 'Indoor-outdoor flow, warm oak, open-plan California modern character',               imagePath: '/EstateAesthetics/Signature:ResidenceTier/California2000.webp' },
-  { style: 'Canyon 2100',   name: 'Canyon 2100',   sqft: '2,100 sq ft', climate: 'hot-dry',       tagline: 'Southwestern character, desert palette, rammed earth and concrete',                  imagePath: '/EstateAesthetics/Signature:ResidenceTier/Canyon2100.webp' },
-  { style: 'Coastal 2000',  name: 'Coastal 2000',  sqft: '2,000 sq ft', climate: 'coastal',       tagline: 'Coastal modern, clean lines, salt-air resilient construction',                      imagePath: '/EstateAesthetics/Signature:ResidenceTier/Coastal2000.webp' },
-  { style: 'Harbor 1900',   name: 'Harbor 1900',   sqft: '1,900 sq ft', climate: 'coastal',       tagline: 'Coastal shingle, deep eaves, built for salt air and working harbor views',           imagePath: '/EstateAesthetics/Signature:ResidenceTier/Harbor1900.webp' },
-  { style: 'Heritage 2300', name: 'Heritage 2300', sqft: '2,300 sq ft', climate: 'four-season',   tagline: 'American heritage proportions, brick and stone, built to be handed down',             imagePath: '/EstateAesthetics/Signature:ResidenceTier/Heritage2300.webp' },
-  { style: 'Lone Star 2100',name: 'Lone Star 2100',sqft: '2,100 sq ft', climate: 'four-season',   tagline: 'Texas limestone, cedar beam, wide-porch living on open land',                        imagePath: '/EstateAesthetics/Signature:ResidenceTier/LoneStar2100.webp' },
-  { style: 'Magnolia 2200', name: 'Magnolia 2200', sqft: '2,200 sq ft', climate: 'four-season',   tagline: 'Southern grace refined — shaded verandas and classic proportions at family scale',   imagePath: '/EstateAesthetics/Signature:ResidenceTier/Magnolia2200.webp' },
-  { style: 'Magnolia 2400', name: 'Magnolia 2400', sqft: '2,400 sq ft', climate: 'four-season',   tagline: 'Southern grace, traditional proportions, shaded porches and gardens',                 imagePath: '/EstateAesthetics/Signature:ResidenceTier/Magnolia2400.webp' },
-  { style: 'Mesa 1800',     name: 'Mesa 1800',     sqft: '1,800 sq ft', climate: 'hot-dry',       tagline: 'Adobe warmth, rammed earth palette, Southwest mesa character',                       imagePath: '/EstateAesthetics/Signature:ResidenceTier/Mesa1800.webp' },
-  { style: 'Oakmont 2600',  name: 'Oakmont 2600',  sqft: '2,600 sq ft', climate: 'four-season',   tagline: 'Classic English character, oak millwork, timeless proportions',                      imagePath: '/EstateAesthetics/Signature:ResidenceTier/Oakmont2600.webp' },
-  { style: 'Prairie 2000',  name: 'Prairie 2000',  sqft: '2,000 sq ft', climate: 'four-season',   tagline: 'Prairie horizontal lines, farmhouse spirit, open land setting',                      imagePath: '/EstateAesthetics/Signature:ResidenceTier/Prairie2000.webp' },
-  { style: 'Summit 2200',   name: 'Summit 2200',   sqft: '2,200 sq ft', climate: 'cold-mountain', tagline: 'Mountain modern, dark timber and stone, built for the peaks',                        imagePath: '/EstateAesthetics/Signature:ResidenceTier/Summit2200.webp' },
-  { style: 'Velocity 2400', name: 'Velocity 2400', sqft: '2,400 sq ft', climate: 'performance',   tagline: 'High-performance aesthetic, precision layout, built for the active family',           imagePath: '/EstateAesthetics/Signature:ResidenceTier/Velocity2400.webp' },
-]
+const TIER_ORDER: Record<Tier, number> = { cottage: 0, signature: 1, executive: 2, legacy: 3 }
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function deriveEstateSpecs(tier: Tier): Pick<EstateFormData, 'squareFootage' | 'budgetRange' | 'buildTimeline'> {
   switch (tier) {
-    case 'cottage':   return { squareFootage: '1,200–1,800', budgetRange: '$350K–$650K',   buildTimeline: '10–14 months' }
-    case 'signature': return { squareFootage: '1,800–3,000', budgetRange: '$650K–$1.3M',   buildTimeline: '12–18 months' }
-    case 'executive': return { squareFootage: '3,000–4,500', budgetRange: '$1.3M–$2.5M',   buildTimeline: '18–24 months' }
-    case 'legacy':    return { squareFootage: '4,500–8,000+', budgetRange: '$2.5M–$6M+',   buildTimeline: '24–36 months' }
+    case 'cottage':   return { squareFootage: '1,200–1,800', budgetRange: '$350K–$650K',  buildTimeline: '10–14 months' }
+    case 'signature': return { squareFootage: '1,800–3,000', budgetRange: '$650K–$1.3M',  buildTimeline: '12–18 months' }
+    case 'executive': return { squareFootage: '3,000–4,500', budgetRange: '$1.3M–$2.5M',  buildTimeline: '18–24 months' }
+    case 'legacy':    return { squareFootage: '4,500–8,000+', budgetRange: '$2.5M–$6M+',  buildTimeline: '24–36 months' }
   }
 }
 
-function CollectionGateModal({ onClose }: { onClose: () => void }) {
-  const [name, setName]           = useState('')
-  const [email, setEmail]         = useState('')
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading]     = useState(false)
-  const [error, setError]         = useState('')
+function scorePlan(plan: BlueprintPlan, answers: QuizAnswers): number {
+  let score = 0
+  if (answers.climate && (plan.climate === answers.climate || plan.climate === 'performance')) score += 4
+  for (const prio of answers.lifestylePriorities) {
+    if (plan.lifestyle.includes(prio)) score += 3
+  }
+  return score
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name || !email) return
-    setLoading(true)
-    setError('')
-    try {
-      const res = await fetch('https://formspree.io/f/mkolgodd', {
-        method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, _subject: 'Collection Unlock Request — Everlasting Homes' }),
-      })
-      if (res.ok) {
-        setSubmitted(true)
-      } else {
-        setError('Something went wrong. Please try again.')
-      }
-    } catch {
-      setError('Something went wrong. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+function getRecommendations(answers: QuizAnswers): BlueprintPlan[] {
+  if (!answers.tier) return []
+
+  const tierPlans = ALL_PLANS.filter(p => {
+    const tier = answers.tier!
+    if (tier === 'cottage')   return ['Banyan 1600','Canyon 1500','Cedar 1800','Coastal 1600','Hearth 1800','Magnolia 1800 Cottage','Oakmont 1800 Cottage','Prairie 1600','Summit 1800','Velocity 1500'].includes(p.style)
+    if (tier === 'signature') return TIER_ORDER[tier] === 1 && !['Banyan 1600','Canyon 1500','Cedar 1800','Coastal 1600','Hearth 1800','Magnolia 1800 Cottage','Oakmont 1800 Cottage','Prairie 1600','Summit 1800','Velocity 1500'].includes(p.style) && !['Aegean Estate','Alpine Estate','Backyard Track House','Car Vault','Creator Estate','Fjord 3800','French Provence','The Lotus','Mediterranean Estate','Moroccan Riad','Nordic Estate','Stealth Wealth','Stillwater 3600','The Banyan','The Hearth','Hill Country','The Patriot','Tropical Modern','Villa 4200','Wabi-Sabi','Cars & Coffee',"Collector's Compound",'The Crooner','Dynasty Studio','Executive Motor Court','Future-Proof','Little Drivers','Maharaja Estate','The Overland','Stealth Wealth II','Bahay Legacy','The Banyan Estate','Desert Oasis','The Homestead','The Homestead II','The Regency','The Sanctuary','The Sporting Estate'].includes(p.style)
+    if (tier === 'executive') return ['Aegean Estate','Alpine Estate','Backyard Track House','Car Vault','Creator Estate','Fjord 3800','French Provence','The Lotus','Mediterranean Estate','Moroccan Riad','Nordic Estate','Stealth Wealth','Stillwater 3600','The Banyan','The Hearth','Hill Country','The Patriot','Tropical Modern','Villa 4200','Wabi-Sabi','Cars & Coffee'].includes(p.style)
+    return ["Collector's Compound",'The Crooner','Dynasty Studio','Executive Motor Court','Future-Proof','Little Drivers','Maharaja Estate','The Overland','Stealth Wealth II','Bahay Legacy','The Banyan Estate','Desert Oasis','The Homestead','The Homestead II','The Regency','The Sanctuary','The Sporting Estate'].includes(p.style)
+  })
+
+  const scored = tierPlans
+    .map(p => ({ plan: p, score: scorePlan(p, answers) }))
+    .sort((a, b) => b.score - a.score)
+
+  return scored.slice(0, 3).map(s => s.plan)
+}
+
+function buildWhyCopy(plan: BlueprintPlan, answers: QuizAnswers): string {
+  const lifestyleLabels: Record<LifestyleId, string> = {
+    cars:         'automotive passion',
+    wellness:     'wellness-centered living',
+    entertaining: 'love of gathering and hospitality',
+    nature:       'connection to land and nature',
+    work:         'creative and professional ambitions',
+    heritage:     'appreciation for heritage and craft',
+    privacy:      'need for quiet and privacy',
+    adventure:    'adventurous, self-reliant spirit',
+  }
+  const climateLabels: Record<PlanClimate, string> = {
+    'coastal':       'coastal setting',
+    'four-season':   'four-season landscape',
+    'hot-dry':       'arid climate',
+    'tropical':      'tropical climate',
+    'cold-mountain': 'mountain environment',
+    'performance':   'any climate',
   }
 
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#1A1614]/80 backdrop-blur-sm px-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 16 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 16 }}
-        transition={{ duration: 0.3 }}
-        className="relative bg-[#FDFAF6] max-w-md w-full rounded-sm overflow-hidden"
-        onClick={e => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-[#9B9189] hover:text-[#1A1614] transition-colors"
-        >
-          <X size={18} />
-        </button>
+  const matchedLifestyle = plan.lifestyle.find(l => answers.lifestylePriorities.includes(l as LifestyleId)) as LifestyleId | undefined
+  const climateMatch = answers.climate && (plan.climate === answers.climate || plan.climate === 'performance')
 
-        {/* Gold top bar */}
-        <div className="h-1 bg-[#C9A84C]" />
-
-        <div className="px-8 py-10">
-          {submitted ? (
-            <div className="text-center">
-              <div className="w-12 h-12 bg-[#C9A84C]/10 rounded-sm flex items-center justify-center mx-auto mb-5">
-                <Sparkles size={20} className="text-[#C9A84C]" />
-              </div>
-              <h3 className="font-serif text-2xl text-[#1A1614] mb-3">We'll be in touch.</h3>
-              <p className="text-[#9B9189] text-sm leading-relaxed">
-                Thank you, {name}. Our team will reach out shortly with access to the full collection and next steps.
-              </p>
-              <button
-                onClick={onClose}
-                className="mt-8 w-full bg-[#1A1614] text-[#F7F3EE] py-3 text-sm font-medium tracking-wide hover:bg-[#3D2B1F] transition-colors rounded-sm"
-              >
-                Continue Browsing
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-px w-6 bg-[#C9A84C]" />
-                <span className="text-[#C9A84C] text-[10px] font-medium tracking-[0.2em] uppercase">Full Collection Access</span>
-              </div>
-              <h3 className="font-serif text-2xl text-[#1A1614] mb-2">Unlock every collection.</h3>
-              <p className="text-[#9B9189] text-sm leading-relaxed mb-8">
-                Our full estate collection is available to qualified buyers. Leave your contact info and our team will be in touch to walk you through every option.
-              </p>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="text-[10px] font-medium tracking-widest uppercase text-[#9B9189] block mb-1.5">Your Name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    placeholder="First and last name"
-                    className="w-full border border-[#E8E0D5] bg-white rounded-sm px-4 py-3 text-sm text-[#1A1614] placeholder:text-[#C4BDB5] focus:outline-none focus:border-[#C9A84C] transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-medium tracking-widest uppercase text-[#9B9189] block mb-1.5">Email Address</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full border border-[#E8E0D5] bg-white rounded-sm px-4 py-3 text-sm text-[#1A1614] placeholder:text-[#C4BDB5] focus:outline-none focus:border-[#C9A84C] transition-colors"
-                  />
-                </div>
-                {error && (
-                  <p className="text-red-500 text-xs">{error}</p>
-                )}
-                <button
-                  type="submit"
-                  disabled={!name || !email || loading}
-                  className="w-full bg-[#C9A84C] text-[#1A1614] py-3 text-sm font-semibold tracking-wide hover:bg-[#DFC078] disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded-sm"
-                >
-                  {loading ? 'Sending…' : 'Get in Touch'}
-                </button>
-              </form>
-              <p className="text-center text-[#C4BDB5] text-[10px] mt-5">No spam. No pressure. One conversation.</p>
-            </>
-          )}
-        </div>
-      </motion.div>
-    </motion.div>
-  )
+  if (matchedLifestyle && climateMatch && answers.climate) {
+    return `Designed for a ${lifestyleLabels[matchedLifestyle]}, built for your ${climateLabels[answers.climate]}.`
+  }
+  if (matchedLifestyle) {
+    return `Tailored to your ${lifestyleLabels[matchedLifestyle]} — a natural fit for the way you want to live.`
+  }
+  if (climateMatch && answers.climate) {
+    return `Engineered for your ${climateLabels[answers.climate]}, with materials that respond to the environment.`
+  }
+  return `A curated match for your family's scale, vision, and values.`
 }
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+const STEPS = ['Your family', 'Your place', 'Your match'] as const
+type Step = 0 | 1 | 2
 
 interface EstateFormProps {
   onComplete: (data: EstateFormData) => void
   initialData?: Partial<EstateFormData>
 }
 
-export default function EstateForm({ onComplete, initialData }: EstateFormProps) {
-  const [data, setData] = useState<EstateFormData>({ ...emptyForm, ...initialData })
-  const [selectedTier, setSelectedTier]   = useState<Tier | null>(null)
-  const [climateFilter, setClimateFilter] = useState<PlanClimate | null>(null)
-  const [gateModalOpen, setGateModalOpen] = useState(false)
+export default function EstateForm({ onComplete }: EstateFormProps) {
+  const [step, setStep] = useState<Step>(0)
+  const [direction, setDirection] = useState<1 | -1>(1)
+  const [selected, setSelected] = useState<string>('')
 
-  const update = <K extends keyof EstateFormData>(key: K, val: EstateFormData[K]) =>
-    setData(prev => ({ ...prev, [key]: val }))
+  const [answers, setAnswers] = useState<QuizAnswers>({
+    familySize: '',
+    children: '',
+    multigenerational: false,
+    lifestylePriorities: [],
+    climate: '',
+    tier: null,
+  })
 
-  const liveMatch = data.aestheticStyle ? matchEstateAesthetic(data) : null
+  const update = <K extends keyof QuizAnswers>(key: K, val: QuizAnswers[K]) =>
+    setAnswers(prev => ({ ...prev, [key]: val }))
+
+  const toggleLifestyle = (id: LifestyleId) =>
+    setAnswers(prev => {
+      const has = prev.lifestylePriorities.includes(id)
+      if (has) return { ...prev, lifestylePriorities: prev.lifestylePriorities.filter(l => l !== id) }
+      if (prev.lifestylePriorities.length >= 3) return prev
+      return { ...prev, lifestylePriorities: [...prev.lifestylePriorities, id] }
+    })
+
+  const goTo = (next: Step) => {
+    setDirection(next > step ? 1 : -1)
+    setStep(next)
+  }
+
+  const step0Valid = !!answers.familySize && !!answers.children && answers.lifestylePriorities.length >= 1
+  const step1Valid = !!answers.climate && !!answers.tier
+  const recommendations = step1Valid ? getRecommendations(answers) : []
+
+  const handleReveal = () => {
+    const plan = ALL_PLANS.find(p => p.style === selected)
+    if (!plan || !answers.tier) return
+    const specs = deriveEstateSpecs(answers.tier)
+    const lifestyleLabels: Record<LifestyleId, string> = {
+      cars: 'Cars & Performance', wellness: 'Wellness & Retreat', entertaining: 'Entertaining & Gathering',
+      nature: 'Land & Nature', work: 'Work & Creation', heritage: 'Heritage & Craft',
+      privacy: 'Privacy & Security', adventure: 'Adventure & Self-Reliance',
+    }
+    onComplete({
+      familySize: answers.familySize,
+      children: answers.children,
+      multigenerational: answers.multigenerational,
+      lifestylePriorities: answers.lifestylePriorities.map(l => lifestyleLabels[l]),
+      landSize: TIERS.find(t => t.id === answers.tier)?.lot ?? '',
+      climate: answers.climate,
+      terrain: '',
+      views: '',
+      privacyNeeds: '',
+      bedrooms: '',
+      bathrooms: '',
+      squareFootage: specs.squareFootage,
+      garageSpaces: '',
+      guestSuite: false, officStudio: false, homeschoolRoom: false, wellnessSuite: answers.lifestylePriorities.includes('wellness'),
+      chefKitchen: false, pantry: false, laundryMudroom: false,
+      poolSpa: false, reflectingPond: false, outdoorKitchen: answers.lifestylePriorities.includes('entertaining'),
+      fireLounge: false, orchard: answers.lifestylePriorities.includes('nature'),
+      raisedBeds: false, greenhouse: false, sportCourt: answers.lifestylePriorities.includes('adventure'),
+      playLawn: false,
+      aestheticStyle: plan.style,
+      budgetRange: specs.budgetRange,
+      buildTimeline: specs.buildTimeline,
+      scipInterest: '',
+    })
+  }
+
+  const variants = {
+    enter: (d: number) => ({ opacity: 0, x: d * 40 }),
+    center: { opacity: 1, x: 0 },
+    exit: (d: number) => ({ opacity: 0, x: d * -40 }),
+  }
 
   return (
     <section id="intake" className="bg-[#F7F3EE] py-16 lg:py-24 px-4 lg:px-10 border-t border-[#E8E0D5]">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-3xl mx-auto">
 
-        <div className="bg-white border border-[#E8E0D5] rounded-sm p-5 md:p-10 space-y-8">
-
-          {/* Tier selector */}
-          <div>
-            <h3 className="font-serif text-2xl text-[#1A1614] mb-1">What scale of home are you building?</h3>
-            <p className="text-[#9B9189] text-sm mb-5">This helps us show only the collections that match your land and vision.</p>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {TIERS.map(tier => (
-                <button
-                  key={tier.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedTier(tier.id)
-                    setClimateFilter(null)
-                    update('landSize', tier.lot)
-                    update('aestheticStyle', '')
-                  }}
-                  className={`text-left p-5 rounded-sm border-2 transition-all ${
-                    selectedTier === tier.id
-                      ? 'border-[#C9A84C] bg-[#C9A84C]/5'
-                      : 'border-[#E8E0D5] bg-white hover:border-[#C9A84C]/40'
-                  }`}
-                >
-                  <div className={`text-xs font-semibold tracking-widest uppercase mb-1 whitespace-nowrap ${selectedTier === tier.id ? 'text-[#C9A84C]' : 'text-[#9B9189]'}`}>
-                    {tier.lot}
-                  </div>
-                  <div className="font-serif text-lg text-[#1A1614]">{tier.label}</div>
-                  <div className="text-[10px] text-[#C9A84C] tracking-wide mb-1">{tier.sublabel}</div>
-                  <div className="text-xs text-[#9B9189] leading-relaxed">{tier.description}</div>
-                  {selectedTier === tier.id && (
-                    <div className="mt-3 flex items-center gap-1.5">
-                      <Check size={11} className="text-[#C9A84C]" />
-                      <span className="text-[#C9A84C] text-[10px] tracking-wide font-medium">Selected</span>
-                    </div>
-                  )}
-                </button>
-              ))}
+        {/* Step indicator */}
+        <div className="flex items-center justify-center gap-3 mb-10">
+          {STEPS.map((label, i) => (
+            <div key={label} className="flex items-center gap-3">
+              <div className={`flex items-center gap-2 transition-all ${i === step ? 'opacity-100' : 'opacity-40'}`}>
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
+                  i < step ? 'bg-[#C9A84C] text-[#1A1614]' : i === step ? 'bg-[#1A1614] text-[#F7F3EE]' : 'bg-[#E8E0D5] text-[#9B9189]'
+                }`}>
+                  {i < step ? <Check size={10} /> : i + 1}
+                </div>
+                <span className="text-xs font-medium tracking-wide text-[#1A1614] hidden sm:block">{label}</span>
+              </div>
+              {i < STEPS.length - 1 && <div className="w-8 h-px bg-[#E8E0D5]" />}
             </div>
-          </div>
+          ))}
+        </div>
 
-          {/* Collection picker — visual image cards for all tiers */}
-          <AnimatePresence mode="wait">
-            {selectedTier && (() => {
-              const allPlans =
-                selectedTier === 'cottage'   ? COTTAGE_PLANS   :
-                selectedTier === 'signature' ? SIGNATURE_PLANS :
-                selectedTier === 'executive' ? EXECUTIVE_PLANS :
-                LEGACY_PLANS
-              const availableFilters = CLIMATE_FILTERS.filter(f =>
-                allPlans.some(p => p.climate === f.id)
-              )
-              const plans = climateFilter
-                ? allPlans.filter(p => p.climate === climateFilter)
-                : allPlans
-              const cols = (selectedTier === 'executive' || selectedTier === 'legacy')
-                ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
-                : 'grid-cols-2 sm:grid-cols-3'
-              const PREVIEW_LIMIT = (selectedTier === 'executive' || selectedTier === 'legacy') ? 8 : 6
-              const visiblePlans = plans.slice(0, PREVIEW_LIMIT)
-              const lockedPlans  = plans.slice(PREVIEW_LIMIT)
-              return (
+        <div className="bg-white border border-[#E8E0D5] rounded-sm overflow-hidden">
+          <div className="h-0.5 bg-[#C9A84C]" />
+
+          <div className="p-6 md:p-10">
+            <AnimatePresence mode="wait" custom={direction}>
+              {/* ── Step 0: Family & Lifestyle ── */}
+              {step === 0 && (
                 <motion.div
-                  key={selectedTier}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="border-t border-[#E8E0D5] pt-6 space-y-4"
+                  key="step0"
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.28 }}
+                  className="space-y-8"
                 >
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <p className="text-xs font-medium text-[#9B9189] tracking-widest uppercase">
-                      Choose your collection
-                      <span className="ml-2 text-[#C9A84C] normal-case font-normal">
-                        {plans.length}{climateFilter ? ` of ${allPlans.length}` : ''} plans
-                      </span>
-                    </p>
-                    {availableFilters.length > 1 && (
-                      <div className="flex flex-wrap gap-1.5">
+                  <div>
+                    <h3 className="font-serif text-2xl text-[#1A1614] mb-1">Tell us about your family.</h3>
+                    <p className="text-[#9B9189] text-sm">We'll use this to match you with the right collections.</p>
+                  </div>
+
+                  {/* Family size */}
+                  <div>
+                    <label className="text-[10px] font-medium tracking-[0.18em] uppercase text-[#9B9189] block mb-3">How many people will live here?</label>
+                    <div className="flex flex-wrap gap-2">
+                      {FAMILY_SIZES.map(s => (
                         <button
+                          key={s}
                           type="button"
-                          onClick={() => setClimateFilter(null)}
-                          className={`px-3 py-1 rounded-full text-[10px] font-medium tracking-wide transition-all border ${
-                            !climateFilter
+                          onClick={() => update('familySize', s)}
+                          className={`px-4 py-2 rounded-sm text-sm border transition-all ${
+                            answers.familySize === s
                               ? 'bg-[#1A1614] border-[#1A1614] text-[#F7F3EE]'
-                              : 'bg-white border-[#E8E0D5] text-[#9B9189] hover:border-[#C9A84C]/60'
+                              : 'bg-white border-[#E8E0D5] text-[#6B5D52] hover:border-[#C9A84C]/60'
                           }`}
                         >
-                          All
+                          {s}
                         </button>
-                        {availableFilters.map(f => (
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Children */}
+                  <div>
+                    <label className="text-[10px] font-medium tracking-[0.18em] uppercase text-[#9B9189] block mb-3">Do you have children?</label>
+                    <div className="flex flex-wrap gap-2">
+                      {CHILDREN_OPTIONS.map(o => (
+                        <button
+                          key={o}
+                          type="button"
+                          onClick={() => update('children', o)}
+                          className={`px-4 py-2 rounded-sm text-sm border transition-all ${
+                            answers.children === o
+                              ? 'bg-[#1A1614] border-[#1A1614] text-[#F7F3EE]'
+                              : 'bg-white border-[#E8E0D5] text-[#6B5D52] hover:border-[#C9A84C]/60'
+                          }`}
+                        >
+                          {o}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Multigenerational */}
+                  <div>
+                    <label className="text-[10px] font-medium tracking-[0.18em] uppercase text-[#9B9189] block mb-3">Will multiple generations live together?</label>
+                    <div className="flex gap-2">
+                      {['Yes', 'No'].map(o => (
+                        <button
+                          key={o}
+                          type="button"
+                          onClick={() => update('multigenerational', o === 'Yes')}
+                          className={`px-4 py-2 rounded-sm text-sm border transition-all ${
+                            (o === 'Yes') === answers.multigenerational
+                              ? 'bg-[#1A1614] border-[#1A1614] text-[#F7F3EE]'
+                              : 'bg-white border-[#E8E0D5] text-[#6B5D52] hover:border-[#C9A84C]/60'
+                          }`}
+                        >
+                          {o}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Lifestyle */}
+                  <div>
+                    <label className="text-[10px] font-medium tracking-[0.18em] uppercase text-[#9B9189] block mb-1">What defines your ideal home? <span className="normal-case font-normal">(pick up to 3)</span></label>
+                    <p className="text-[#C4BDB5] text-xs mb-3">{answers.lifestylePriorities.length}/3 selected</p>
+                    <div className="grid sm:grid-cols-2 gap-2">
+                      {LIFESTYLE_OPTIONS.map(opt => {
+                        const active = answers.lifestylePriorities.includes(opt.id)
+                        const disabled = !active && answers.lifestylePriorities.length >= 3
+                        return (
                           <button
-                            key={f.id}
+                            key={opt.id}
                             type="button"
-                            onClick={() => setClimateFilter(climateFilter === f.id ? null : f.id)}
-                            title={f.risk}
-                            className={`px-3 py-1 rounded-full text-[10px] font-medium tracking-wide transition-all border ${
-                              climateFilter === f.id
-                                ? 'bg-[#C9A84C] border-[#C9A84C] text-[#1A1614]'
-                                : 'bg-white border-[#E8E0D5] text-[#9B9189] hover:border-[#C9A84C]/60'
+                            onClick={() => toggleLifestyle(opt.id)}
+                            disabled={disabled}
+                            className={`flex items-center gap-3 p-3 rounded-sm border text-left transition-all ${
+                              active
+                                ? 'bg-[#1A1614] border-[#1A1614]'
+                                : disabled
+                                ? 'opacity-30 cursor-not-allowed border-[#E8E0D5]'
+                                : 'border-[#E8E0D5] hover:border-[#C9A84C]/60'
                             }`}
                           >
-                            {f.label}
+                            <span className="text-xl leading-none">{opt.icon}</span>
+                            <div>
+                              <div className={`text-sm font-medium ${active ? 'text-[#F7F3EE]' : 'text-[#1A1614]'}`}>{opt.label}</div>
+                              <div className={`text-[10px] mt-0.5 ${active ? 'text-[#9B9189]' : 'text-[#C4BDB5]'}`}>{opt.description}</div>
+                            </div>
+                            {active && <Check size={13} className="text-[#C9A84C] ml-auto flex-shrink-0" />}
                           </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {climateFilter && (
-                    <p className="text-[10px] text-[#C9A84C] tracking-wide -mt-2">
-                      {CLIMATE_FILTERS.find(f => f.id === climateFilter)?.risk}
-                    </p>
-                  )}
-                  <div className={`grid ${cols} gap-3`}>
-                    {/* Visible plans */}
-                    {visiblePlans.map(plan => (
-                      <button
-                        key={plan.style}
-                        type="button"
-                        onClick={() => update('aestheticStyle', plan.style)}
-                        className={`group relative rounded-sm overflow-hidden border-2 transition-all text-left ${
-                          data.aestheticStyle === plan.style
-                            ? 'border-[#C9A84C]'
-                            : 'border-transparent hover:border-[#C9A84C]/50'
-                        }`}
-                      >
-                        <img
-                          src={plan.imagePath}
-                          alt={plan.name}
-                          className="w-full aspect-[4/5] object-cover"
-                        />
-                        <div className={`absolute inset-0 transition-all ${
-                          data.aestheticStyle === plan.style
-                            ? 'bg-[#1A1614]/50'
-                            : 'bg-[#1A1614]/30 group-hover:bg-[#1A1614]/45'
-                        }`} />
-                        <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <div className="font-serif text-[#F7F3EE] text-base leading-tight">{plan.name}</div>
-                          <div className="text-[#C9A84C] text-[10px] tracking-wide mt-0.5">{plan.sqft}</div>
-                          <div className="text-[#C4BDB5] text-[10px] mt-1 leading-snug hidden group-hover:block">{plan.tagline}</div>
-                        </div>
-                        {data.aestheticStyle === plan.style && (
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-[#C9A84C] rounded-full flex items-center justify-center">
-                            <Check size={12} className="text-[#1A1614]" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
-
-                    {/* Locked plans — blurred with gate overlay */}
-                    {lockedPlans.map((plan, idx) => (
-                      <button
-                        key={plan.style}
-                        type="button"
-                        onClick={() => setGateModalOpen(true)}
-                        className="group relative rounded-sm overflow-hidden border-2 border-transparent text-left"
-                      >
-                        <img
-                          src={plan.imagePath}
-                          alt=""
-                          className="w-full aspect-[4/5] object-cover blur-sm scale-105"
-                        />
-                        <div className="absolute inset-0 bg-[#1A1614]/60" />
-                        {/* Show the unlock CTA only on the first locked card */}
-                        {idx === 0 ? (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
-                            <div className="w-9 h-9 bg-[#C9A84C]/20 border border-[#C9A84C]/40 rounded-sm flex items-center justify-center">
-                              <Lock size={14} className="text-[#C9A84C]" />
-                            </div>
-                            <div className="font-serif text-[#F7F3EE] text-sm leading-tight">
-                              {lockedPlans.length} more collection{lockedPlans.length !== 1 ? 's' : ''}
-                            </div>
-                            <div className="text-[#C9A84C] text-[10px] tracking-wide border border-[#C9A84C]/50 px-3 py-1 rounded-sm group-hover:bg-[#C9A84C]/10 transition-colors">
-                              Unlock All
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Lock size={14} className="text-[#F7F3EE]/40" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
+                        )
+                      })}
+                    </div>
                   </div>
 
-                  <AnimatePresence>
-                    {liveMatch && (
-                      <motion.div
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="button"
+                      onClick={() => goTo(1)}
+                      disabled={!step0Valid}
+                      className="flex items-center gap-2 bg-[#C9A84C] text-[#1A1614] px-6 py-3 rounded-sm text-sm font-semibold hover:bg-[#DFC078] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    >
+                      Continue <ChevronRight size={15} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── Step 1: Climate & Scale ── */}
+              {step === 1 && (
+                <motion.div
+                  key="step1"
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.28 }}
+                  className="space-y-8"
+                >
+                  <div>
+                    <h3 className="font-serif text-2xl text-[#1A1614] mb-1">Where and how big?</h3>
+                    <p className="text-[#9B9189] text-sm">Climate and scale narrow your perfect match.</p>
+                  </div>
+
+                  {/* Climate */}
+                  <div>
+                    <label className="text-[10px] font-medium tracking-[0.18em] uppercase text-[#9B9189] block mb-3">Your climate or region</label>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {CLIMATES.map(c => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => update('climate', c.id)}
+                          className={`p-3 rounded-sm border text-left transition-all ${
+                            answers.climate === c.id
+                              ? 'bg-[#1A1614] border-[#1A1614]'
+                              : 'border-[#E8E0D5] hover:border-[#C9A84C]/60'
+                          }`}
+                        >
+                          <div className={`text-sm font-medium ${answers.climate === c.id ? 'text-[#F7F3EE]' : 'text-[#1A1614]'}`}>{c.label}</div>
+                          <div className={`text-[10px] mt-0.5 ${answers.climate === c.id ? 'text-[#9B9189]' : 'text-[#C4BDB5]'}`}>{c.note}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tier */}
+                  <div>
+                    <label className="text-[10px] font-medium tracking-[0.18em] uppercase text-[#9B9189] block mb-3">Scale of home</label>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                      {TIERS.map(t => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => update('tier', t.id)}
+                          className={`p-4 rounded-sm border text-left transition-all ${
+                            answers.tier === t.id
+                              ? 'bg-[#1A1614] border-[#1A1614]'
+                              : 'border-[#E8E0D5] hover:border-[#C9A84C]/60'
+                          }`}
+                        >
+                          <div className={`text-xs font-medium tracking-wide ${answers.tier === t.id ? 'text-[#C9A84C]' : 'text-[#9B9189]'}`}>{t.lot}</div>
+                          <div className={`font-serif text-base mt-0.5 ${answers.tier === t.id ? 'text-[#F7F3EE]' : 'text-[#1A1614]'}`}>{t.label}</div>
+                          <div className={`text-[10px] mt-0.5 ${answers.tier === t.id ? 'text-[#9B9189]' : 'text-[#C4BDB5]'}`}>{t.sublabel}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between pt-2">
+                    <button
+                      type="button"
+                      onClick={() => goTo(0)}
+                      className="flex items-center gap-1.5 text-[#9B9189] text-sm hover:text-[#1A1614] transition-colors"
+                    >
+                      <ChevronLeft size={15} /> Back
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setSelected(''); goTo(2) }}
+                      disabled={!step1Valid}
+                      className="flex items-center gap-2 bg-[#C9A84C] text-[#1A1614] px-6 py-3 rounded-sm text-sm font-semibold hover:bg-[#DFC078] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    >
+                      Find my match <ChevronRight size={15} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── Step 2: Recommendations ── */}
+              {step === 2 && (
+                <motion.div
+                  key="step2"
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.28 }}
+                  className="space-y-6"
+                >
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="h-px w-6 bg-[#C9A84C]" />
+                      <span className="text-[#C9A84C] text-[10px] font-medium tracking-[0.2em] uppercase">Your top matches</span>
+                    </div>
+                    <h3 className="font-serif text-2xl text-[#1A1614] mb-1">We found your collections.</h3>
+                    <p className="text-[#9B9189] text-sm">Select the one that calls to you.</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    {recommendations.map((plan, i) => (
+                      <motion.button
+                        key={plan.style}
+                        type="button"
+                        onClick={() => setSelected(plan.style)}
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.4 }}
-                        className="flex items-center gap-3 bg-[#1A1614] rounded-sm px-5 py-4"
+                        transition={{ duration: 0.3, delay: i * 0.08 }}
+                        className={`w-full flex items-stretch rounded-sm border-2 overflow-hidden text-left transition-all ${
+                          selected === plan.style
+                            ? 'border-[#C9A84C]'
+                            : 'border-[#E8E0D5] hover:border-[#C9A84C]/50'
+                        }`}
                       >
-                        <Sparkles size={15} className="text-[#C9A84C] flex-shrink-0" />
-                        <div>
-                          <p className="font-serif text-[#F7F3EE] text-sm">{liveMatch.collectionName}</p>
-                          <p className="text-[#9B9189] text-[10px] tracking-wide mt-0.5">{liveMatch.collectionTag}</p>
+                        {/* Image */}
+                        <div className="w-28 sm:w-36 flex-shrink-0 relative">
+                          <img
+                            src={plan.imagePath}
+                            alt={plan.name}
+                            className="w-full h-full object-cover"
+                          />
+                          {i === 0 && (
+                            <div className="absolute top-2 left-2 bg-[#C9A84C] text-[#1A1614] text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-sm uppercase">
+                              Best match
+                            </div>
+                          )}
                         </div>
-                        <p className="text-[#C4BDB5] text-xs ml-auto">Ready to reveal →</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )
-            })()}
-          </AnimatePresence>
 
-          <div className="pt-6 border-t border-[#E8E0D5] flex justify-end">
-            <motion.button
-              type="button"
-              onClick={() => onComplete({ ...data, ...deriveEstateSpecs(selectedTier ?? 'signature') })}
-              disabled={!data.aestheticStyle}
-              className="flex items-center gap-2 bg-[#C9A84C] text-[#1A1614] px-8 py-3 rounded-sm text-sm font-semibold hover:bg-[#DFC078] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Sparkles size={15} />
-              Reveal My Estate Collection
-            </motion.button>
+                        {/* Content */}
+                        <div className="flex-1 p-4 flex flex-col justify-between">
+                          <div>
+                            <div className="font-serif text-[#1A1614] text-lg leading-tight">{plan.name}</div>
+                            <div className="text-[#C9A84C] text-[10px] tracking-wide mt-0.5">{plan.sqft}</div>
+                            <p className="text-[#6B5D52] text-xs mt-2 leading-relaxed">{plan.tagline}</p>
+                          </div>
+                          <p className="text-[#9B9189] text-[11px] italic mt-3">{buildWhyCopy(plan, answers)}</p>
+                        </div>
+
+                        {/* Check */}
+                        <div className="flex items-center pr-4">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                            selected === plan.style
+                              ? 'bg-[#C9A84C] border-[#C9A84C]'
+                              : 'border-[#E8E0D5]'
+                          }`}>
+                            {selected === plan.style && <Check size={10} className="text-[#1A1614]" />}
+                          </div>
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2">
+                    <button
+                      type="button"
+                      onClick={() => goTo(1)}
+                      className="flex items-center gap-1.5 text-[#9B9189] text-sm hover:text-[#1A1614] transition-colors"
+                    >
+                      <ChevronLeft size={15} /> Back
+                    </button>
+                    <motion.button
+                      type="button"
+                      onClick={handleReveal}
+                      disabled={!selected}
+                      className="flex items-center gap-2 bg-[#C9A84C] text-[#1A1614] px-8 py-3 rounded-sm text-sm font-semibold hover:bg-[#DFC078] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Sparkles size={15} />
+                      Reveal My Estate Blueprint
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         <p className="text-center text-[#9B9189] text-xs mt-5">No account required · Instant results · Free</p>
       </div>
-
-      <AnimatePresence>
-        {gateModalOpen && <CollectionGateModal onClose={() => setGateModalOpen(false)} />}
-      </AnimatePresence>
     </section>
   )
 }
