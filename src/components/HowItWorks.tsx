@@ -15,28 +15,23 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 const steps = [
   {
     num: '01',
-    title: 'Tell us about your family & lifestyle',
-    description: 'Share your household size, lifestyle priorities, and the ways you\'ll actually live in this home — from slow mornings to entertaining at scale.',
+    title: 'Choose your series',
+    description: 'Select the tier that matches your land and vision — Cottage, Signature, Executive, or Legacy. Your size, budget, and build timeline are set automatically.',
   },
   {
     num: '02',
-    title: 'Describe your property & climate',
-    description: 'Land size, climate zone, terrain, views, and privacy needs shape your estate\'s orientation and outdoor program.',
+    title: 'Pick your collection',
+    description: 'Browse visual concept boards across every aesthetic. Filter by climate and risk profile — Hot & Dry, Mountain, Coastal, Tropical, or Performance — to find the design built for your land.',
   },
   {
     num: '03',
-    title: 'Define your home program',
-    description: 'Bedrooms, bathrooms, specialty spaces — office, wellness suite, homeschool room, casita. Dial in exactly what your family needs.',
+    title: 'Describe how you live',
+    description: 'Family size, lifestyle priorities, rooms, specialty spaces, and outdoor program. This shapes everything — from room sequencing to SCIP panel specifications.',
   },
   {
     num: '04',
-    title: 'Plan your outdoor estate',
-    description: 'Pool, orchard, greenhouse, fire lounge, sport court — your outdoor program is as important as the home itself.',
-  },
-  {
-    num: '05',
-    title: 'Set style, budget & timeline',
-    description: 'Choose your aesthetic, set your investment range, and align on build timeline and SCIP readiness.',
+    title: 'Receive your estate blueprint',
+    description: 'A complete AI-generated concept document: estate name, room-by-room program, outdoor zones, SCIP construction notes, build phasing, and a full builder handoff checklist.',
   },
 ]
 
@@ -51,10 +46,10 @@ export default function HowItWorks() {
           </div>
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-16">
             <h2 className="font-serif text-4xl md:text-5xl text-[#1A1614] leading-tight max-w-lg">
-              Five steps to your estate blueprint.
+              Four steps to your estate blueprint.
             </h2>
             <p className="text-[#9B9189] max-w-xs text-sm leading-relaxed lg:text-right">
-              The whole process takes about 8 minutes. At the end, you receive a complete estate concept document.
+              The whole process takes about 5 minutes. At the end, you receive a complete estate concept document.
             </p>
           </div>
         </FadeIn>

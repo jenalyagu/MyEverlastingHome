@@ -1,11 +1,184 @@
 import { useState, useEffect, useRef } from 'react'
 // useRef kept for EstateAestheticResult forwardRef compatibility
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Download } from 'lucide-react'
+import { ArrowLeft, Download, X, Check } from 'lucide-react'
 import { type Blueprint, type EstateFormData } from '../lib/blueprintGenerator'
 import { fetchBoardBrief, type BoardBriefResponse } from '../lib/fetchBoardBrief'
 import { matchEstateAesthetic } from '../lib/matchEstateAesthetic'
 import EstateAestheticResult from '../components/EstateAestheticResult'
+
+// ─── Download Gate Modal ──────────────────────────────────────────────────────
+
+const BUILD_TIMELINES = [
+  { id: 'now',      label: 'Ready to build now',  note: 'Actively planning or already have land' },
+  { id: '1-2yr',    label: '1–2 years out',        note: 'Saving, researching, or in early planning' },
+  { id: 'exploring', label: 'Just exploring',      note: 'No timeline yet, getting inspired' },
+]
+
+function DownloadGateModal({
+  estateName,
+  aestheticStyle,
+  onClose,
+  onConfirm,
+}: {
+  estateName: string
+  aestheticStyle: string
+  onClose: () => void
+  onConfirm: () => void
+}) {
+  const [name,     setName]     = useState('')
+  const [email,    setEmail]    = useState('')
+  const [timeline, setTimeline] = useState('')
+  const [loading,  setLoading]  = useState(false)
+  const [error,    setError]    = useState('')
+  const [done,     setDone]     = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name || !email || !timeline) return
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('https://formspree.io/f/mkolgodd', {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          buildTimeline: BUILD_TIMELINES.find(t => t.id === timeline)?.label,
+          collection: aestheticStyle,
+          estate: estateName,
+          _subject: `Blueprint Download — ${estateName} (${aestheticStyle})`,
+        }),
+      })
+      if (!res.ok) throw new Error('Submission failed')
+      setDone(true)
+      setTimeout(() => { onClose(); onConfirm() }, 1200)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="no-print fixed inset-0 z-50 flex items-center justify-center bg-[#1A1614]/80 backdrop-blur-sm px-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 16 }}
+        transition={{ duration: 0.3 }}
+        className="relative bg-[#FDFAF6] max-w-md w-full rounded-sm overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="h-0.5 bg-[#C9A84C]" />
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-[#9B9189] hover:text-[#1A1614] transition-colors"
+        >
+          <X size={18} />
+        </button>
+
+        <div className="px-8 py-10">
+          {done ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-4"
+            >
+              <div className="w-12 h-12 bg-[#C9A84C]/10 border border-[#C9A84C]/30 rounded-sm flex items-center justify-center mx-auto mb-4">
+                <Check size={20} className="text-[#C9A84C]" />
+              </div>
+              <p className="font-serif text-[#1A1614] text-lg">Your blueprint is ready.</p>
+              <p className="text-[#9B9189] text-sm mt-1">Preparing download…</p>
+            </motion.div>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-px w-6 bg-[#C9A84C]" />
+                <span className="text-[#C9A84C] text-[10px] font-medium tracking-[0.2em] uppercase">Download Blueprint</span>
+              </div>
+              <h3 className="font-serif text-2xl text-[#1A1614] mb-1">One quick step.</h3>
+              <p className="text-[#9B9189] text-sm leading-relaxed mb-7">
+                Where should we send updates on your collection and build timeline?
+              </p>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-medium tracking-widest uppercase text-[#9B9189] block mb-1.5">Your Name</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="First and last name"
+                    className="w-full border border-[#E8E0D5] bg-white rounded-sm px-4 py-3 text-sm text-[#1A1614] placeholder:text-[#C4BDB5] focus:outline-none focus:border-[#C9A84C] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-medium tracking-widest uppercase text-[#9B9189] block mb-1.5">Email Address</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full border border-[#E8E0D5] bg-white rounded-sm px-4 py-3 text-sm text-[#1A1614] placeholder:text-[#C4BDB5] focus:outline-none focus:border-[#C9A84C] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-medium tracking-widest uppercase text-[#9B9189] block mb-2">When are you planning to build?</label>
+                  <div className="space-y-2">
+                    {BUILD_TIMELINES.map(t => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setTimeline(t.id)}
+                        className={`w-full flex items-center gap-3 p-3 rounded-sm border text-left transition-all ${
+                          timeline === t.id
+                            ? 'bg-[#1A1614] border-[#1A1614]'
+                            : 'border-[#E8E0D5] hover:border-[#C9A84C]/60'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
+                          timeline === t.id ? 'border-[#C9A84C] bg-[#C9A84C]' : 'border-[#E8E0D5]'
+                        }`}>
+                          {timeline === t.id && <div className="w-1.5 h-1.5 rounded-full bg-[#1A1614]" />}
+                        </div>
+                        <div>
+                          <div className={`text-sm font-medium ${timeline === t.id ? 'text-[#F7F3EE]' : 'text-[#1A1614]'}`}>{t.label}</div>
+                          <div className={`text-[10px] mt-0.5 ${timeline === t.id ? 'text-[#9B9189]' : 'text-[#C4BDB5]'}`}>{t.note}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {error && <p className="text-red-500 text-xs">{error}</p>}
+
+                <button
+                  type="submit"
+                  disabled={!name || !email || !timeline || loading}
+                  className="w-full bg-[#C9A84C] text-[#1A1614] py-3 text-sm font-semibold tracking-wide hover:bg-[#DFC078] disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded-sm flex items-center justify-center gap-2"
+                >
+                  <Download size={14} />
+                  {loading ? 'Saving…' : 'Download My Blueprint'}
+                </button>
+              </form>
+              <p className="text-center text-[#C4BDB5] text-[10px] mt-5">No spam. Your blueprint, on record.</p>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
 
 interface BlueprintPageProps {
   blueprint: Blueprint
@@ -21,8 +194,8 @@ function LoadingScreen() {
         style={{ backgroundImage: 'repeating-linear-gradient(45deg, #C5A46D 0px, #C5A46D 1px, transparent 1px, transparent 60px)' }}
       />
       <div className="relative z-10 flex flex-col items-center text-center gap-5">
-        <div className="w-14 h-14 border border-[#C5A46D]/40 flex items-center justify-center">
-          <span className="font-serif text-[#C5A46D] text-xl tracking-widest">M</span>
+        <div className="w-14 h-14 border border-[#C5A46D]/40 flex items-center justify-center p-2">
+          <img src="/Logos/ehbg-logo.png" alt="EHBG" className="w-full h-full object-contain" />
         </div>
         <div className="h-px w-10 bg-[#C5A46D]" />
         <p className="text-[#9B9189] text-xs tracking-[0.25em] uppercase">Composing your estate brief…</p>
@@ -44,14 +217,13 @@ function LoadingScreen() {
 export default function BlueprintPage({ blueprint, formData, onBack }: BlueprintPageProps) {
   const [loading, setLoading]             = useState(true)
   const [briefResponse, setBriefResponse] = useState<BoardBriefResponse | null>(null)
+  const [gateOpen, setGateOpen]           = useState(false)
   const hasInitialized = useRef(false)
   const resultRef      = useRef<HTMLDivElement>(null)
 
   const aestheticMatch = matchEstateAesthetic(formData)
 
-  const handleDownload = () => {
-    window.print()
-  }
+  const handleDownload = () => setGateOpen(true)
 
   useEffect(() => {
     if (hasInitialized.current) return
@@ -179,6 +351,22 @@ export default function BlueprintPage({ blueprint, formData, onBack }: Blueprint
               </div>
             )}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {gateOpen && (
+          <DownloadGateModal
+            estateName={briefResponse?.brief?.estateName ?? blueprint.estateName}
+            aestheticStyle={formData.aestheticStyle}
+            onClose={() => setGateOpen(false)}
+            onConfirm={() => {
+              const link = document.createElement('a')
+              link.href = aestheticMatch.imagePath
+              link.download = `${(briefResponse?.brief?.estateName ?? blueprint.estateName).replace(/\s+/g, '-')}-blueprint.webp`
+              link.click()
+            }}
+          />
         )}
       </AnimatePresence>
 

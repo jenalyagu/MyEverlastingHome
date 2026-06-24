@@ -45,7 +45,7 @@ export default function SamplePreview({ onViewSample }: SamplePreviewProps) {
             onClick={onViewSample}
           >
             <img
-              src="/EstateAesthetics/MyEverlastingHomeVertical.png"
+              src="/EstateAesthetics/MyEverlastingHomeVertical.webp"
               alt="My Everlasting Home — Sample Estate Blueprint"
               className="w-full object-contain"
             />

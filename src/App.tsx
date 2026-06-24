@@ -84,7 +84,7 @@ export default function App() {
                 <X size={18} />
               </button>
               <img
-                src="/EstateAesthetics/MyEverlastingHomeVertical.png"
+                src="/EstateAesthetics/MyEverlastingHomeVertical.webp"
                 alt="My Everlasting Home Sample Blueprint"
                 className="w-full h-auto block"
               />
