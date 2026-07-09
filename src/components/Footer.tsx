@@ -1,4 +1,18 @@
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+
 export default function Footer() {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const scrollToSection = (id: string) => {
+    if (location.pathname === '/') {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      navigate('/')
+      setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 100)
+    }
+  }
+
   return (
     <footer className="bg-[#1A1614] py-16 px-6 lg:px-10 border-t border-[#C4BDB5]/10">
       <div className="max-w-7xl mx-auto">
@@ -20,9 +34,9 @@ export default function Footer() {
             <div>
               <div className="text-[#C9A84C] text-xs tracking-widest uppercase font-medium mb-4">Platform</div>
               <ul className="space-y-2.5 text-[#9B9189] text-sm">
-                <li><button onClick={() => document.getElementById('intake')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-[#C4BDB5] transition-colors">Design My Estate</button></li>
-                <li><button onClick={() => document.getElementById('scip')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-[#C4BDB5] transition-colors">Why SCIP</button></li>
-                <li><button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-[#C4BDB5] transition-colors">How It Works</button></li>
+                <li><button onClick={() => scrollToSection('intake')} className="hover:text-[#C4BDB5] transition-colors">Design My Estate</button></li>
+                <li><button onClick={() => scrollToSection('scip')} className="hover:text-[#C4BDB5] transition-colors">Why SCIP</button></li>
+                <li><button onClick={() => scrollToSection('how-it-works')} className="hover:text-[#C4BDB5] transition-colors">How It Works</button></li>
               </ul>
             </div>
             <div>
@@ -38,10 +52,10 @@ export default function Footer() {
             <div>
               <div className="text-[#C9A84C] text-xs tracking-widest uppercase font-medium mb-4">Legal</div>
               <ul className="space-y-2.5 text-[#9B9189] text-sm">
-                <li>Terms of Service</li>
-                <li>Privacy Policy</li>
-                <li>Disclaimer</li>
-                <li>Contact</li>
+                <li><Link to="/terms" className="hover:text-[#C4BDB5] transition-colors">Terms of Service</Link></li>
+                <li><Link to="/privacy" className="hover:text-[#C4BDB5] transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/disclaimer" className="hover:text-[#C4BDB5] transition-colors">Disclaimer</Link></li>
+                <li><Link to="/contact" className="hover:text-[#C4BDB5] transition-colors">Contact</Link></li>
               </ul>
             </div>
           </div>

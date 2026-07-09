@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import Navbar from './components/Navbar'
@@ -9,11 +10,15 @@ import WhySCIP from './components/WhySCIP'
 import EstateForm from './components/EstateForm'
 import Footer from './components/Footer'
 import BlueprintPage from './pages/BlueprintPage'
+import TermsOfService from './pages/legal/TermsOfService'
+import PrivacyPolicy from './pages/legal/PrivacyPolicy'
+import Disclaimer from './pages/legal/Disclaimer'
+import Contact from './pages/legal/Contact'
 import { generateBlueprint, type EstateFormData, type Blueprint } from './lib/blueprintGenerator'
 
 type View = 'landing' | 'blueprint'
 
-export default function App() {
+function HomePage() {
   const [view, setView] = useState<View>('landing')
   const [blueprint, setBlueprint] = useState<Blueprint | null>(null)
   const [formData, setFormData] = useState<EstateFormData | null>(null)
@@ -55,7 +60,7 @@ export default function App() {
         <Hero onDesignEstate={handleDesignEstate} onViewSample={() => setSampleModalOpen(true)} />
         <WhatItDoes />
         <WhySCIP />
-<EstateForm onComplete={handleFormComplete} />
+        <EstateForm onComplete={handleFormComplete} />
         <Footer />
       </div>
 
@@ -93,5 +98,19 @@ export default function App() {
         )}
       </AnimatePresence>
     </>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/disclaimer" element={<Disclaimer />} />
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
