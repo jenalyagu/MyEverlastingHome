@@ -28,20 +28,55 @@ export default function ShareWithEHBG({ brief, match, formData, onClose }: Props
     setErrorMsg('')
 
     try {
-      const res = await fetch('/api/share-with-ehbg', {
+      const matchedCollection = `${match.collectionName} — ${match.collectionTag}`
+      const features = [
+        formData.wellnessSuite && 'Wellness Suite',
+        formData.chefKitchen && "Chef's Kitchen",
+        formData.poolSpa && 'Pool & Spa',
+        formData.officStudio && "Founder's Studio",
+        formData.homeschoolRoom && 'Learning Atelier',
+        formData.guestSuite && 'Guest Suite',
+        formData.outdoorKitchen && 'Outdoor Kitchen',
+        formData.fireLounge && 'Fire Lounge',
+        formData.greenhouse && 'Greenhouse',
+        formData.orchard && 'Orchard',
+        formData.reflectingPond && 'Reflecting Pond',
+        formData.sportCourt && 'Sport Court',
+      ].filter(Boolean).join(', ') || 'None selected'
+
+      const res = await fetch('https://formspree.io/f/xojooogp', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
-          contact: { name, email, phone: phone || undefined, note: note || undefined },
-          brief,
-          formData,
-          matchedCollection: `${match.collectionName} — ${match.collectionTag}`,
+          name,
+          email,
+          phone: phone || 'Not provided',
+          message: note || 'Not provided',
+          _subject: `New Lead: ${brief.estateName} — ${name}`,
+          estateName: brief.estateName,
+          estateSubtitle: brief.estateSubtitle,
+          estateNarrative: brief.estateNarrative,
+          matchedCollection,
+          aestheticStyle: formData.aestheticStyle,
+          squareFootage: formData.squareFootage,
+          budgetRange: formData.budgetRange,
+          landSize: formData.landSize,
+          climate: formData.climate,
+          views: formData.views,
+          bedrooms: formData.bedrooms,
+          bathrooms: formData.bathrooms,
+          garageSpaces: formData.garageSpaces,
+          familySize: formData.familySize,
+          multigenerational: formData.multigenerational ? 'Yes' : 'No',
+          lifestylePriorities: formData.lifestylePriorities?.join(', ') || 'Not specified',
+          selectedFeatures: features,
+          scipInterest: formData.scipInterest,
         }),
       })
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Something went wrong' })) as { error?: string }
-        throw new Error(err.error ?? 'Submission failed')
+        const err = await res.json().catch(() => ({})) as { errors?: Array<{ message: string }> }
+        throw new Error(err.errors?.map(e => e.message).join(', ') || 'Submission failed')
       }
 
       setStatus('success')
